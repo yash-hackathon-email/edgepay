@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgePay — Offline UPI Payments for Everyone</title>
+  <meta name="description" content="EdgePay enables seamless UPI payments even without internet. Powered by USSD banking, QR scanning, and Edge Wallet technology.">
+  <link rel="icon" href="../assets/EdgePay_Icon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <img src="../assets/EdgePay_Icon.png" alt="EdgePay" class="nav-logo-img">
+        <span>EdgePay</span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#services">Services</a>
+        <a href="#tech">Tech Stack</a>
+        <a href="#download" class="nav-cta">Download APK</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Works Offline — No Internet Needed
+        </div>
+        <h1 class="hero-title">
+          Payments Without <br>
+          <span class="gradient-text">Boundaries</span>
+        </h1>
+        <p class="hero-subtitle">
+          EdgePay enables seamless UPI payments even when you're offline. 
+          Powered by USSD banking technology, QR code scanning, and our 
+          Edge Wallet — send money anytime, anywhere.
+        </p>
+        <div class="hero-actions">
+          <a href="#download" class="btn btn-primary btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download APK
+          </a>
+          <a href="https://github.com/itsnishant089/EdgePay" target="_blank" class="btn btn-ghost btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            View Source
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-value">23MB</span>
+            <span class="stat-label">App Size</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-value">0ms</span>
+            <span class="stat-label">Internet Needed</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-value">*99#</span>
+            <span class="stat-label">USSD Powered</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="mock-status-bar">
+              <span>9:41</span>
+              <div class="mock-icons">
+                <span>●●●●</span>
+                <span>WiFi</span>
+                <span>100%</span>
+              </div>
+            </div>
+            <div class="mock-header">
+              <span class="mock-greeting">Welcome back,</span>
+              <span class="mock-name">Nishant</span>
+            </div>
+            <div class="mock-balance-card">
+              <div class="mock-balance-label">AVAILABLE BALANCE</div>
+              <div class="mock-balance-amount">₹24,500</div>
+              <div class="mock-bank">SBI — Verified ✓</div>
+            </div>
+            <div class="mock-actions">
+              <div class="mock-action-btn"><span>📷</span><small>Scan</small></div>
+              <div class="mock-action-btn"><span>💸</span><small>Send</small></div>
+              <div class="mock-action-btn"><span>👛</span><small>Wallet</small></div>
+              <div class="mock-action-btn"><span>🏦</span><small>Services</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">Core Features</span>
+        <h2 class="section-title">Built for the <span class="gradient-text">Real India</span></h2>
+        <p class="section-subtitle">Where internet is a luxury, not a given. EdgePay bridges the digital divide with technology that works everywhere.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card feature-card-large" data-aos="fade-up">
+          <div class="feature-icon" style="background: rgba(10, 132, 255, 0.1);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </div>
+          <h3>Offline USSD Banking</h3>
+          <p>Send money via India's *99# USSD protocol. Works on any phone network — no WiFi, no data, no problem. Just GSM signal.</p>
+          <div class="feature-tag">Primary Engine</div>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-icon" style="background: rgba(191, 90, 242, 0.1);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BF5AF2" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/></svg>
+          </div>
+          <h3>Edge Wallet</h3>
+          <p>Our UPI-based digital wallet with PIN verification and end-to-end encrypted transaction processing.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-icon" style="background: rgba(48, 209, 88, 0.1);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#30D158" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/></svg>
+          </div>
+          <h3>QR Code Scanner</h3>
+          <p>Instantly scan any UPI QR code with the built-in camera. Details auto-fill into your payment flow.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-icon" style="background: rgba(255, 159, 10, 0.1);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9F0A" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <h3>SMS Confirmation</h3>
+          <p>Dual-confirmation system reads bank debit SMS in real-time and via inbox polling for 100% reliability.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+          <div class="feature-icon" style="background: rgba(255, 55, 95, 0.1);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF375F" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Account Services</h3>
+          <p>Check balance, change UPI PIN, and request payments — all through secure USSD channels directly from the app.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+          <div class="feature-icon" style="background: rgba(100, 210, 255, 0.1);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#64D2FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <h3>Multi-Language</h3>
+          <p>Full support for English and Hindi interfaces. Designed for India's diverse linguistic landscape.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">How It Works</span>
+        <h2 class="section-title">Three Steps to <span class="gradient-text">Send Money</span></h2>
+        <p class="section-subtitle">No internet? No app ecosystem? No problem. EdgePay works where others can't.</p>
+      </div>
+      <div class="steps-container">
+        <div class="step" data-aos="fade-right">
+          <div class="step-number">01</div>
+          <div class="step-content">
+            <h3>Enter Details or Scan QR</h3>
+            <p>Type the receiver's mobile number or UPI ID, or simply scan their QR code. The app auto-detects the payment mode.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-aos="fade-right" data-aos-delay="200">
+          <div class="step-number">02</div>
+          <div class="step-content">
+            <h3>Confirm & Authenticate</h3>
+            <p>Review payment details, then enter your UPI PIN. The app builds the USSD command and dials it through your phone's native system.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-aos="fade-right" data-aos-delay="400">
+          <div class="step-number">03</div>
+          <div class="step-content">
+            <h3>Instant Confirmation</h3>
+            <p>EdgePay monitors your SMS inbox for the bank's debit confirmation. Once detected, it shows "Payment Successful" instantly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="services" id="services">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">Banking Services</span>
+        <h2 class="section-title">Full Bank Access <span class="gradient-text">via USSD</span></h2>
+      </div>
+      <div class="services-grid">
+        <div class="service-card" data-aos="zoom-in">
+          <div class="service-icon service-icon-green">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#30D158" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3>Check Balance</h3>
+          <p>View your linked bank account balance instantly through the USSD channel.</p>
+          <code>*99*3#</code>
+        </div>
+        <div class="service-card" data-aos="zoom-in" data-aos-delay="150">
+          <div class="service-icon service-icon-orange">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9F0A" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <h3>Change UPI PIN</h3>
+          <p>Reset or update your UPI PIN securely via native USSD prompts.</p>
+          <code>*99*7#</code>
+        </div>
+        <div class="service-card" data-aos="zoom-in" data-aos-delay="300">
+          <div class="service-icon service-icon-purple">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BF5AF2" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <h3>Request Payment</h3>
+          <p>Request money from any mobile number with a single tap.</p>
+          <code>*99*2*mob*amt*1*1</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech" id="tech">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">Under the Hood</span>
+        <h2 class="section-title">Engineered with <span class="gradient-text">Precision</span></h2>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-item" data-aos="fade-up">
+          <div class="tech-logo">⚛️</div>
+          <span>React Native</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="50">
+          <div class="tech-logo">📱</div>
+          <span>Android Native</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="tech-logo">🔷</div>
+          <span>TypeScript</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="150">
+          <div class="tech-logo">🟣</div>
+          <span>Kotlin</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="tech-logo">📷</div>
+          <span>Vision Camera</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="250">
+          <div class="tech-logo">🔐</div>
+          <span>USSD Bridge</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="tech-logo">💬</div>
+          <span>SMS Parser</span>
+        </div>
+        <div class="tech-item" data-aos="fade-up" data-aos-delay="350">
+          <div class="tech-logo">🔥</div>
+          <span>Hermes Engine</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download CTA -->
+  <section class="download" id="download">
+    <div class="download-glow"></div>
+    <div class="section-container">
+      <div class="download-content">
+        <img src="../assets/EdgePay_Icon.png" alt="EdgePay" class="download-logo">
+        <h2 class="download-title">Ready to Go <span class="gradient-text">Offline?</span></h2>
+        <p class="download-subtitle">Download EdgePay and start making payments without internet. Just a GSM signal is all you need.</p>
+        <div class="download-actions">
+          <a href="https://github.com/itsnishant089/EdgePay/releases" target="_blank" class="btn btn-primary btn-xl">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download APK (23MB)
+          </a>
+          <a href="https://github.com/itsnishant089/EdgePay" target="_blank" class="btn btn-outline btn-xl">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub Repository
+          </a>
+        </div>
+        <div class="download-info">
+          <span>✓ Android 7.0+</span>
+          <span>✓ No Root Required</span>
+          <span>✓ Open Source</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="section-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img src="../assets/EdgePay_Icon.png" alt="EdgePay" class="footer-logo">
+          <span class="footer-name">EdgePay</span>
+          <p class="footer-desc">Offline payments for everyone. Built for India.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>Product</h4>
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#services">Services</a>
+            <a href="#download">Download</a>
+          </div>
+          <div class="footer-col">
+            <h4>Developer</h4>
+            <a href="https://github.com/itsnishant089/EdgePay" target="_blank">GitHub</a>
+            <a href="#tech">Tech Stack</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 EdgePay. Built by Team Hackrust.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
