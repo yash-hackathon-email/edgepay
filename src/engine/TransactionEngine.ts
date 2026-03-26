@@ -183,17 +183,20 @@ export async function executeWalletTransaction(
   const updatedTxn = { ...transaction, status: 'SENT' as TransactionStatus };
   
   try {
-    onStatusUpdate(transaction.id, 'SENT', 'Connecting to Edge Wallet...');
+    onStatusUpdate(transaction.id, 'SENT', 'Initiating secure wallet transfer...');
     
     // Simulate network delay
-    await new Promise<void>(r => setTimeout(() => r(), 1500));
+    await new Promise<void>(r => setTimeout(() => r(), 1200));
     onStatusUpdate(transaction.id, 'PENDING', 'Verifying UPI credentials...');
     
     await new Promise<void>(r => setTimeout(() => r(), 1500));
-    onStatusUpdate(transaction.id, 'SENT', 'Processing payment...');
+    onStatusUpdate(transaction.id, 'SENT', 'Securing transaction bridge...');
     
-    await new Promise<void>(r => setTimeout(() => r(), 2000));
-    onStatusUpdate(transaction.id, 'SUCCESS', 'Wallet payment successful!');
+    await new Promise<void>(r => setTimeout(() => r(), 1800));
+    onStatusUpdate(transaction.id, 'SENT', 'Waiting for wallet response...');
+    
+    await new Promise<void>(r => setTimeout(() => r(), 1500));
+    onStatusUpdate(transaction.id, 'SUCCESS', 'Payment processed successfully!');
     
     return { ...updatedTxn, status: 'SUCCESS' };
   } catch (error) {

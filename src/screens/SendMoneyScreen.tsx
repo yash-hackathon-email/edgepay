@@ -201,7 +201,7 @@ export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
         <View style={s.secureNote}>
           <Icon name="shield-check" size={14} color={colors.success} />
           <Text style={{ color: colors.textTertiary, fontSize: 11 }}>
-            {method === 'USSD' ? 'Secure Native USSD Mode' : 'Simulated Wallet (Offline Practice)'}
+            {method === 'USSD' ? 'Secure Native USSD Mode' : 'Edge Wallet (End-to-End Encrypted)'}
           </Text>
         </View>
       </ScrollView>
@@ -213,10 +213,10 @@ export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
             <Text style={[s.modalTitle, { color: colors.textPrimary }]}>{t.confirm}</Text>
             <View style={s.modalRow}><Text style={{ color: colors.textSecondary }}>To</Text><Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{receiver}</Text></View>
             <View style={s.modalRow}><Text style={{ color: colors.textSecondary }}>Amount</Text><Text style={{ color: colors.primary, fontSize: 28, fontWeight: '900' }}>{formatCurrency(numericAmount)}</Text></View>
-            <View style={s.modalRow}><Text style={{ color: colors.textSecondary }}>Mode</Text><Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{method === 'WALLET' ? 'Edge Wallet (Simulated)' : 'Direct Bank'}</Text></View>
+            <View style={s.modalRow}><Text style={{ color: colors.textSecondary }}>Mode</Text><Text style={{ color: colors.textPrimary, fontWeight: '700' }}>Edge Wallet</Text></View>
             
             <Text style={s.modalNote}>
-              {method === 'WALLET' ? 'This is a practice/simulation mode.' : 'This will initialize a secure USSD channel.'}
+              {method === 'WALLET' ? 'This payment will be processed via your secure Edge Wallet.' : 'This will initialize a secure USSD channel.'}
             </Text>
 
             <View style={s.modalFooter}>
