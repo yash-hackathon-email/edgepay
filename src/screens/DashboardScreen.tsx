@@ -118,7 +118,8 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           {/* Actions */}
           <View style={s.actionsGrid}>
             <ActionBtn icon="qrcode-scan" label={t.scan} color="#0A84FF" onPress={() => navigation.navigate('QRScan')} themeColors={colors} />
-            <ActionBtn icon="bank-transfer" label={t.send} color="#BF5AF2" onPress={() => navigation.navigate('SendMoney')} themeColors={colors} />
+            <ActionBtn icon="bank-transfer" label={t.send} color="#BF5AF2" onPress={() => navigation.navigate('SendMoney', { method: 'USSD' })} themeColors={colors} />
+            <ActionBtn icon="wallet" label="Wallet" color={colors.primary} onPress={() => navigation.navigate('SendMoney', { method: 'WALLET' })} themeColors={colors} />
             <ActionBtn icon="history" label={t.history} color="#FF9F0A" onPress={() => navigation.navigate('History')} themeColors={colors} />
             <ActionBtn icon="account-cog" label={t.account} color="#30D158" onPress={() => navigation.navigate('Account')} themeColors={colors} />
           </View>
@@ -174,8 +175,8 @@ const s = StyleSheet.create({
   lastUpdate: { fontSize: 9, fontStyle: 'italic' },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   badgeText: { fontSize: 10, fontWeight: '800' },
-  actionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  actionBtnWrap: { alignItems: 'center', gap: 10, width: '22%' },
+  actionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, flexWrap: 'wrap', gap: 12 },
+  actionBtnWrap: { alignItems: 'center', gap: 10, width: '18%' },
   actionIcon: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   actionLabel: { fontSize: 11, fontWeight: '800' },
   txnSection: { marginTop: 24, gap: 16 },

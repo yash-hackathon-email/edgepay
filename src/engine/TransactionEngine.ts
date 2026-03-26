@@ -39,15 +39,16 @@ export function createTransaction(
   amount: number,
   receiver: string,
   receiverName?: string,
-  mode: NetworkMode = 'GSM'
+  mode: NetworkMode = 'GSM',
+  method: 'USSD' | 'WALLET' = 'USSD'
 ): Transaction {
-  const ussdCommand = buildUssdCommand(receiver.trim(), amount);
+  const ussdCommand = method === 'USSD' ? buildUssdCommand(receiver.trim(), amount) : undefined;
   return {
     id: generateTransactionId(),
     amount,
     receiver: receiver.trim(),
     receiverName: receiverName?.trim(),
-    method: 'USSD',
+    method: method,
     status: 'PENDING',
     timestamp: Date.now(),
     retryCount: 0,
@@ -170,4 +171,33 @@ function waitForBankConfirmation(
       finish('FAILED');
     }, SMS_WAIT_TIMEOUT_MS);
   });
+}
+
+/**
+ * Execute a simulated WALLET transaction
+ */
+export async function executeWalletTransaction(
+  transaction: Transaction,
+  onStatusUpdate: (id: string, status: TransactionStatus, message?: string) => void
+): Promise<Transaction> {
+  const updatedTxn = { ...transaction, status: 'SENT' as TransactionStatus };
+  
+  try {
+    onStatusUpdate(transaction.id, 'SENT', 'Connecting to Edge Wallet...');
+    
+    // Simulate network delay
+    await new Promise<void>(r => setTimeout(() => r(), 1500));
+    onStatusUpdate(transaction.id, 'PENDING', 'Verifying UPI credentials...');
+    
+    await new Promise<void>(r => setTimeout(() => r(), 1500));
+    onStatusUpdate(transaction.id, 'SENT', 'Processing payment...');
+    
+    await new Promise<void>(r => setTimeout(() => r(), 2000));
+    onStatusUpdate(transaction.id, 'SUCCESS', 'Wallet payment successful!');
+    
+    return { ...updatedTxn, status: 'SUCCESS' };
+  } catch (error) {
+    onStatusUpdate(transaction.id, 'FAILED', 'Wallet transaction failed.');
+    return { ...updatedTxn, status: 'FAILED' };
+  }
 }

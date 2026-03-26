@@ -2,7 +2,7 @@
 
 export type TransactionStatus = 'PENDING' | 'SENT' | 'SUCCESS' | 'FAILED' | 'QUEUED' | 'CANCELLED';
 
-export type TransactionMethod = 'USSD' | 'ONLINE';
+export type TransactionMethod = 'USSD' | 'ONLINE' | 'WALLET';
 
 export type NetworkMode = 'ONLINE' | 'GSM' | 'DETECTING';
 

@@ -23,7 +23,7 @@ const SCANNER_SIZE = Dimensions.get('window').width * 0.7;
 export const QRScanScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { colors, theme } = useTheme();
-  const language = useStore(state => state.language);
+  const { language, networkMode } = useStore();
   const t = translations[language] || translations.en;
   
   const [manualInput, setManualInput] = useState('');
@@ -77,7 +77,8 @@ export const QRScanScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleProceed = () => {
     if (!scannedData) return;
     const { receiver, name } = getReceiverFromQR(scannedData);
-    navigation.navigate('SendMoney', { receiver, name, amount: scannedData.amount });
+    const method = networkMode === 'ONLINE' ? 'WALLET' : 'USSD';
+    navigation.navigate('SendMoney', { receiver, name, amount: scannedData.amount, method });
   };
 
   const handleReset = () => {
