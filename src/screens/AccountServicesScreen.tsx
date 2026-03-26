@@ -63,7 +63,7 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
     const amt = Math.floor(parseInt(requestAmount, 10) || 0);
     if (amt <= 0) return;
 
-    const ussdCode = `*99*2*${cleanMobile}*${amt}*1*1#`;
+    const ussdCode = `*99*2*${cleanMobile}*${amt}*1*1`;
     setShowRequestModal(false);
     setRequestMobile('');
     setRequestAmount('');
@@ -139,23 +139,6 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
             <Icon name="chevron-right" size={22} color={colors.textTertiary} />
           </TouchableOpacity>
         ))}
-
-        {/* USSD Code Reference */}
-        <View style={[s.codeRef, { backgroundColor: colors.surfaceElevated, borderColor: colors.cardBorder }]}>
-          <Text style={[s.codeRefTitle, { color: colors.textSecondary }]}>USSD Quick Reference</Text>
-          <View style={s.codeRow}>
-            <Text style={[s.codeLabel, { color: colors.textTertiary }]}>Balance Check</Text>
-            <Text style={[s.codeValue, { color: colors.primary }]}>*99*3#</Text>
-          </View>
-          <View style={s.codeRow}>
-            <Text style={[s.codeLabel, { color: colors.textTertiary }]}>UPI PIN Change</Text>
-            <Text style={[s.codeValue, { color: colors.primary }]}>*99*7#</Text>
-          </View>
-          <View style={s.codeRow}>
-            <Text style={[s.codeLabel, { color: colors.textTertiary }]}>Request Payment</Text>
-            <Text style={[s.codeValue, { color: colors.primary }]}>*99*2*mob*amt*1*1#</Text>
-          </View>
-        </View>
       </ScrollView>
 
       {/* Processing Overlay */}
@@ -255,11 +238,7 @@ const s = StyleSheet.create({
   serviceTitle: { fontSize: 16, fontWeight: '800' },
   serviceSubtitle: { fontSize: 12, fontWeight: '500' },
 
-  codeRef: { borderRadius: 16, padding: 18, borderWidth: 1, gap: 12, marginTop: 8 },
-  codeRefTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
-  codeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  codeLabel: { fontSize: 13, fontWeight: '500' },
-  codeValue: { fontSize: 14, fontWeight: '800', fontFamily: 'monospace' },
+
 
   processingOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   processingCard: { borderRadius: 24, padding: 32, borderWidth: 1, alignItems: 'center', gap: 16, width: '100%' },
