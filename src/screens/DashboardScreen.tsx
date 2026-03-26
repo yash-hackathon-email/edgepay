@@ -120,8 +120,8 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
             <ActionBtn icon="qrcode-scan" label={t.scan} color="#0A84FF" onPress={() => navigation.navigate('QRScan')} themeColors={colors} />
             <ActionBtn icon="bank-transfer" label={t.send} color="#BF5AF2" onPress={() => navigation.navigate('SendMoney', { method: 'USSD' })} themeColors={colors} />
             <ActionBtn icon="wallet" label="Wallet" color={colors.primary} onPress={() => navigation.navigate('SendMoney', { method: 'WALLET' })} themeColors={colors} />
+            <ActionBtn icon="bank-outline" label="Services" color="#FF375F" onPress={() => navigation.navigate('Services')} themeColors={colors} />
             <ActionBtn icon="history" label={t.history} color="#FF9F0A" onPress={() => navigation.navigate('History')} themeColors={colors} />
-            <ActionBtn icon="account-cog" label={t.account} color="#30D158" onPress={() => navigation.navigate('Account')} themeColors={colors} />
           </View>
 
           {/* Transactions */}

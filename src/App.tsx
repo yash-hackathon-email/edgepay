@@ -17,6 +17,7 @@ import { QRScanScreen } from './screens/QRScanScreen';
 import { TransactionHistoryScreen } from './screens/TransactionHistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SetupScreen } from './screens/SetupScreen';
+import { AccountServicesScreen } from './screens/AccountServicesScreen';
 
 import { useStore, initializeStore } from './store/useStore';
 import { useNetworkMonitor } from './engine/NetworkDetector';
@@ -233,6 +234,7 @@ function AppContent() {
           <Tab.Screen name="QRScan" component={QRScanScreen} />
           <Tab.Screen name="History" component={TransactionHistoryScreen} />
           <Tab.Screen name="Account" component={SettingsScreen} />
+          <Tab.Screen name="Services" component={AccountServicesScreen} options={{ tabBarButton: () => null }} />
         </Tab.Navigator>
       </View>
     </NavigationContainer>
