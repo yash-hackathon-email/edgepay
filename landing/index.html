@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgePay — Offline UPI Payments for Everyone</title>
+  <meta name="description" content="EdgePay enables seamless UPI payments even without internet. Powered by USSD banking, QR scanning, and Edge Wallet technology.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg-0:#F5F4FF; --bg-1:#FFFFFF; --bg-2:#F0EFFF; --bg-card:#FFFFFF; --bg-s:#F7F7FF;
+    --indigo:#3A0CA3; --indigo-m:#4361EE; --indigo-l:rgba(67,97,238,0.1); --indigo-b:rgba(67,97,238,0.22);
+    --orange:#F77F00; --orange-l:rgba(247,127,0,0.12); --orange-b:rgba(247,127,0,0.3);
+    --green:#0CBB6A; --green-l:rgba(12,187,106,0.1); --green-b:rgba(12,187,106,0.25);
+    --purple:#7B2FBE; --purple-l:rgba(123,47,190,0.1);
+    --red:#E5383B; --red-l:rgba(229,56,59,0.1);
+    --cyan:#0096C7; --cyan-l:rgba(0,150,199,0.1);
+    --text-1:#0D0A2E; --text-2:rgba(13,10,46,0.58); --text-3:rgba(13,10,46,0.36);
+    --border:rgba(13,10,46,0.08); --border-h:rgba(13,10,46,0.16);
+    --grad:linear-gradient(135deg,#3A0CA3,#4361EE);
+    --grad-o:linear-gradient(135deg,#F77F00,#E63946);
+    --grad-h:linear-gradient(135deg,#F5F4FF 0%,#EEF0FF 50%,#F0F5FF 100%);
+    --r-md:14px; --r-lg:20px; --r-xl:28px; --r-2xl:40px;
+    --fh:'Bricolage Grotesque',sans-serif; --fb:'Plus Jakarta Sans',sans-serif;
+    --sh-sm:0 2px 8px rgba(58,12,163,0.08); --sh-md:0 8px 32px rgba(58,12,163,0.12);
+    --sh-lg:0 20px 60px rgba(58,12,163,0.14); --sh-o:0 8px 32px rgba(247,127,0,0.3);
+    --sh-card:0 4px 20px rgba(13,10,46,0.08),0 1px 3px rgba(13,10,46,0.04);
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;}
+  body{font-family:var(--fb);background:var(--bg-0);color:var(--text-1);line-height:1.65;overflow-x:hidden;}
+  a{text-decoration:none;color:inherit;}
+  img{max-width:100%;display:block;}
+
+  .ctr{max-width:1200px;margin:0 auto;padding:0 24px;}
+  .sh{text-align:center;margin-bottom:68px;}
+  .stag{display:inline-block;font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--indigo-m);background:var(--indigo-l);border:1px solid var(--indigo-b);padding:6px 16px;border-radius:100px;margin-bottom:18px;}
+  .stit{font-family:var(--fh);font-size:clamp(30px,4vw,50px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;color:var(--text-1);margin-bottom:16px;}
+  .ssub{font-size:17px;color:var(--text-2);line-height:1.75;max-width:560px;margin:0 auto;}
+  .gt{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .ot{background:var(--grad-o);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+  [data-aos]{opacity:0;transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+  [data-aos="fu"]{transform:translateY(36px);}
+  [data-aos="fr"]{transform:translateX(-36px);}
+  [data-aos="fl"]{transform:translateX(36px);}
+  [data-aos="zi"]{transform:scale(.9);}
+  [data-aos].vis{opacity:1;transform:none;}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--fh);font-weight:700;border-radius:var(--r-lg);border:none;cursor:pointer;transition:all .22s ease;white-space:nowrap;text-decoration:none;}
+  .btn-dl{background:var(--grad-o);color:#FFF;box-shadow:var(--sh-o);font-size:16px;padding:18px 36px;border-radius:var(--r-xl);font-weight:800;border:2px solid transparent;outline:3px solid rgba(247,127,0,0.22);outline-offset:3px;}
+  .btn-dl:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 16px 48px rgba(247,127,0,0.45);outline-color:rgba(247,127,0,0.4);}
+  .btn-wrap{position:relative;display:inline-block;}
+  .pulse-ring{position:absolute;inset:-6px;border-radius:calc(var(--r-xl) + 6px);border:2px solid rgba(247,127,0,0.35);animation:p-ring 2.5s ease-out infinite;pointer-events:none;}
+  @keyframes p-ring{0%{opacity:.9;transform:scale(.98);}70%{opacity:0;transform:scale(1.08);}100%{opacity:0;transform:scale(1.08);}}
+  .btn-pr{background:var(--grad);color:#FFF;box-shadow:var(--sh-md);padding:14px 28px;font-size:15px;}
+  .btn-pr:hover{transform:translateY(-2px);box-shadow:var(--sh-lg);}
+  .btn-gh{background:#FFF;color:var(--text-1);border:1.5px solid var(--border-h);box-shadow:var(--sh-sm);padding:14px 28px;font-size:15px;}
+  .btn-gh:hover{border-color:var(--indigo-m);color:var(--indigo-m);transform:translateY(-2px);}
+  .btn-pp{background:#FFF;color:var(--indigo);border:1.5px solid var(--indigo-b);box-shadow:var(--sh-sm);padding:14px 28px;font-size:15px;font-weight:700;}
+  .btn-pp:hover{background:var(--indigo-l);border-color:var(--indigo-m);transform:translateY(-2px);}
+  .btn-wh{background:#FFF;color:var(--indigo);box-shadow:0 8px 40px rgba(0,0,0,.2);font-size:16px;padding:18px 36px;border-radius:var(--r-xl);font-weight:800;font-family:var(--fh);display:inline-flex;align-items:center;gap:10px;transition:all .22s ease;}
+  .btn-wh:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 16px 48px rgba(0,0,0,.3);}
+  .btn-dg{background:transparent;color:#FFF;border:1.5px solid rgba(255,255,255,.35);font-size:15px;padding:16px 28px;border-radius:var(--r-xl);font-weight:700;font-family:var(--fh);display:inline-flex;align-items:center;gap:10px;transition:all .22s ease;}
+  .btn-dg:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);transform:translateY(-2px);}
+
+  /* ══ MODERN NAVBAR ══ */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:20px 0;transition:all .4s cubic-bezier(.16,1,.3,1);}
+  .nav.sc{padding:12px 0;}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;}
+  
+  /* Logo */
+  .nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--fh);font-size:20px;font-weight:800;color:var(--text-1);letter-spacing:-.5px;transition:opacity .2s;}
+  .nav-logo:hover{opacity:.8;}
+  .nav-logo-img{width:36px;height:36px;border-radius:10px;overflow:hidden;flex-shrink:0;box-shadow:var(--sh-sm);}
+  .nav-logo-img img{width:100%;height:100%;object-fit:cover;}
+
+  /* Pill nav - floats in center */
+  .nav-pill{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--border);border-radius:100px;padding:6px 8px;box-shadow:0 4px 24px rgba(13,10,46,0.08),0 1px 3px rgba(13,10,46,0.04);}
+  .nav.sc .nav-pill{background:rgba(255,255,255,0.95);box-shadow:0 8px 32px rgba(13,10,46,0.1);}
+  .nav-pill a{font-size:13.5px;font-weight:600;color:var(--text-2);padding:7px 16px;border-radius:100px;transition:all .2s;white-space:nowrap;font-family:var(--fh);}
+  .nav-pill a:hover{color:var(--text-1);background:var(--bg-0);}
+  .nav-pill a.active{color:var(--indigo-m);background:var(--indigo-l);}
+
+  /* CTA button right */
+  .nav-right{display:flex;align-items:center;gap:12px;}
+  .nav-cta{background:var(--grad-o);color:#FFF;padding:10px 22px;border-radius:100px;font-family:var(--fh);font-weight:800;font-size:13px;box-shadow:0 4px 16px rgba(247,127,0,0.35);transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(247,127,0,0.45);}
+  .nav-cta svg{flex-shrink:0;}
+
+  /* Mobile hamburger */
+  .ntog{display:none;background:rgba(255,255,255,0.9);border:1px solid var(--border);cursor:pointer;flex-direction:column;gap:5px;padding:10px;border-radius:12px;backdrop-filter:blur(10px);box-shadow:var(--sh-sm);}
+  .ntog span{width:20px;height:2px;background:var(--text-1);border-radius:2px;transition:all .3s;display:block;}
+  .ntog.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .ntog.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .ntog.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  /* Mobile drawer */
+  .nav-drawer{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:998;pointer-events:none;}
+  .nav-drawer.open{pointer-events:all;}
+  .nav-drawer-bg{position:absolute;inset:0;background:rgba(13,10,46,0.3);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s;}
+  .nav-drawer.open .nav-drawer-bg{opacity:1;}
+  .nav-drawer-panel{position:absolute;top:0;right:0;bottom:0;width:min(320px,90vw);background:#FFF;box-shadow:-20px 0 60px rgba(13,10,46,0.15);transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;padding:80px 28px 32px;}
+  .nav-drawer.open .nav-drawer-panel{transform:translateX(0);}
+  .nav-drawer-links{display:flex;flex-direction:column;gap:4px;flex:1;}
+  .nav-drawer-links a{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--text-2);padding:14px 16px;border-radius:14px;transition:all .2s;display:flex;align-items:center;gap:10px;}
+  .nav-drawer-links a:hover{color:var(--text-1);background:var(--bg-0);}
+  .nav-drawer-links a .ndot{width:6px;height:6px;border-radius:50%;background:var(--border-h);flex-shrink:0;transition:background .2s;}
+  .nav-drawer-links a:hover .ndot{background:var(--indigo-m);}
+  .nav-drawer-cta{margin-top:24px;}
+  .nav-drawer-cta a{background:var(--grad-o);color:#FFF;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:16px;font-family:var(--fh);font-weight:800;font-size:16px;box-shadow:var(--sh-o);}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative;overflow:hidden;background:var(--grad-h);}
+  .h-blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);}
+  .h-blob-1{width:600px;height:600px;top:-100px;right:-120px;background:rgba(67,97,238,0.1);animation:bdrift 10s ease-in-out infinite;}
+  .h-blob-2{width:500px;height:500px;bottom:-150px;left:-100px;background:rgba(247,127,0,0.08);animation:bdrift 10s ease-in-out infinite 5s;}
+  .h-blob-3{width:300px;height:300px;top:40%;left:40%;background:rgba(123,47,190,0.06);animation:bdrift 12s ease-in-out infinite 2s;}
+  @keyframes bdrift{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-20px) scale(1.05);}66%{transform:translate(-15px,10px) scale(.95);}}
+  .h-dots{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(58,12,163,0.12) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,black 30%,transparent 80%);}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;position:relative;z-index:2;}
+
+  .hbadge{display:inline-flex;align-items:center;gap:8px;background:var(--green-l);border:1px solid var(--green-b);padding:7px 16px;border-radius:100px;font-size:13px;font-weight:600;color:var(--green);margin-bottom:22px;font-family:var(--fh);}
+  .bdot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pdot 2s infinite;}
+  @keyframes pdot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(12,187,106,.4);}50%{opacity:.7;box-shadow:0 0 0 6px rgba(12,187,106,0);}}
+  .h1{font-family:var(--fh);font-size:clamp(40px,5.5vw,68px);font-weight:800;line-height:1.06;letter-spacing:-2.5px;color:var(--text-1);margin-bottom:22px;}
+  .hsub{font-size:17px;color:var(--text-2);line-height:1.78;max-width:500px;margin-bottom:36px;}
+
+  .dl-box{background:#FFF;border:2px solid var(--orange-b);border-radius:var(--r-xl);padding:24px 28px;margin-bottom:28px;box-shadow:0 8px 32px rgba(247,127,0,0.1),var(--sh-card);position:relative;}
+  .dl-box::before{content:'';position:absolute;top:-1px;left:24px;right:24px;height:3px;background:var(--grad-o);border-radius:0 0 4px 4px;}
+  .dl-box-lbl{font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .dl-box-lbl em{background:var(--orange-l);padding:3px 10px;border-radius:100px;font-style:normal;}
+  .dl-box-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .h-links{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px;}
+  .h-stats{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+  .sv{display:block;font-family:var(--fh);font-size:22px;font-weight:800;color:var(--text-1);letter-spacing:-.5px;}
+  .sl{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.5px;margin-top:2px;}
+  .sdiv{width:1px;height:32px;background:var(--border);}
+
+  /* ══ PHONE MOCKUP — BUILT FROM SCRATCH ══ */
+  .hvisual{display:flex;justify-content:center;align-items:center;position:relative;}
+  .vring{position:absolute;border-radius:50%;border:1.5px dashed rgba(67,97,238,0.18);pointer-events:none;animation:rspin 25s linear infinite;}
+  .vring-1{width:380px;height:380px;}
+  .vring-2{width:480px;height:480px;animation-direction:reverse;animation-duration:35s;}
+  @keyframes rspin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .fb{position:absolute;background:#FFF;border-radius:14px;padding:10px 16px;z-index:3;box-shadow:0 8px 32px rgba(58,12,163,0.12);display:flex;align-items:center;gap:8px;border:1px solid var(--border);font-size:12px;font-weight:700;animation:bfloat 4s ease-in-out infinite;}
+  .fb-1{top:10%;left:-10%;animation-delay:0s;}
+  .fb-2{bottom:16%;right:-10%;animation-delay:2s;}
+  @keyframes bfloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  .fbd{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+  /* The phone shell */
+  .phone{width:270px;z-index:2;position:relative;animation:pfloat 7s ease-in-out infinite;}
+  @keyframes pfloat{0%,100%{transform:translateY(0) rotate(-1.5deg);}50%{transform:translateY(-14px) rotate(-1.5deg);}}
+  
+  .phone-shell{background:linear-gradient(155deg,#1c1a2e,#0e0c1c);border-radius:44px;padding:12px;border:2px solid rgba(255,255,255,0.1);box-shadow:0 60px 120px rgba(58,12,163,0.28),0 20px 40px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;}
+  .phone-shell::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:90px;height:24px;background:#0e0c1c;border-radius:0 0 14px 14px;z-index:10;}
+  .phone-screen{background:#0a0818;border-radius:34px;overflow:hidden;position:relative;}
+
+  /* Status bar */
+  .ps-bar{display:flex;justify-content:space-between;align-items:center;padding:28px 18px 8px;position:relative;z-index:5;}
+  .ps-time{font-size:12px;font-weight:700;color:#eee;font-family:var(--fh);}
+  .ps-icons{display:flex;align-items:center;gap:4px;}
+  .ps-sig{display:flex;align-items:flex-end;gap:2px;}
+  .ps-sig span{background:#eee;border-radius:1px;}
+  .ps-bat{width:18px;height:9px;border:1.5px solid rgba(255,255,255,0.4);border-radius:3px;position:relative;margin-left:4px;}
+  .ps-bat::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:2px;height:5px;background:rgba(255,255,255,0.4);border-radius:0 1px 1px 0;}
+  .ps-bat-fill{position:absolute;left:1px;top:1px;bottom:1px;width:75%;background:#4ade80;border-radius:1px;}
+
+  /* App header */
+  .papp-hdr{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 10px;}
+  .papp-logo{display:flex;align-items:center;gap:7px;}
+  .papp-icon{width:26px;height:26px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#3A0CA3,#4361EE);display:flex;align-items:center;justify-content:center;}
+  .papp-icon img{width:100%;height:100%;object-fit:cover;}
+  .papp-name{font-size:13px;font-weight:800;color:#fff;font-family:var(--fh);}
+  .papp-offline{display:inline-flex;align-items:center;gap:4px;background:rgba(247,127,0,0.15);border:1px solid rgba(247,127,0,0.3);border-radius:100px;padding:2px 8px;font-size:8px;font-weight:800;color:#f77f00;letter-spacing:.5px;text-transform:uppercase;}
+  .papp-settings{width:28px;height:28px;background:rgba(255,255,255,0.07);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+  /* Welcome */
+  .pwelcome{padding:2px 18px 10px;}
+  .pwelcome-sub{font-size:9px;color:rgba(255,255,255,.4);font-weight:500;}
+  .pwelcome-name{font-size:19px;font-weight:800;color:#fff;font-family:var(--fh);letter-spacing:-.5px;margin:1px 0;}
+  .pavatar{width:32px;height:32px;background:linear-gradient(135deg,#4361EE,#7B2FBE);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;font-family:var(--fh);}
+
+  /* Balance card */
+  .pcard{background:linear-gradient(135deg,#3A0CA3,#4361EE);border-radius:16px;padding:14px 16px;margin:0 14px 12px;position:relative;overflow:hidden;}
+  .pcard::before{content:'';position:absolute;top:-40px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.07);}
+  .pcard::after{content:'';position:absolute;bottom:-20px;left:-10px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.04);}
+  .pcard-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;}
+  .pcard-offline-badge{display:flex;align-items:center;gap:3px;font-size:7px;color:rgba(255,193,7,0.9);font-weight:700;}
+  .pcard-offline-badge span{width:4px;height:4px;background:rgba(255,193,7,0.9);border-radius:50%;}
+  .pcard-amount{font-size:24px;font-weight:800;color:#fff;letter-spacing:-1px;font-family:var(--fh);position:relative;z-index:2;margin-bottom:6px;}
+  .pcard-bank{font-size:9px;color:rgba(255,255,255,.55);font-weight:600;display:flex;align-items:center;gap:4px;position:relative;z-index:2;}
+
+  /* Action buttons */
+  .pactions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 14px 10px;}
+  .pact-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:12px;cursor:pointer;transition:background .2s;}
+  .pact-btn:hover{background:rgba(255,255,255,.09);}
+  .pact-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+  .pact-label{font-size:7px;color:rgba(255,255,255,.45);font-weight:700;letter-spacing:.3px;}
+
+  /* History */
+  .phist{padding:2px 14px 14px;}
+  .phist-title{font-size:9px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;}
+  .ptx{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:10px;margin-bottom:5px;border:1px solid rgba(255,255,255,.05);}
+  .ptx-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-weight:800;font-family:var(--fh);color:#fff;}
+  .ptx-info{flex:1;min-width:0;}
+  .ptx-name{font-size:9px;font-weight:700;color:#eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ptx-meta{display:flex;align-items:center;gap:4px;margin-top:2px;}
+  .ptx-tag{display:inline-flex;align-items:center;gap:3px;font-size:6px;font-weight:700;padding:1px 5px;border-radius:4px;letter-spacing:.3px;}
+  .ptx-tag.sent{background:rgba(12,187,106,.12);color:#0CBB6A;}
+  .ptx-tag.rcv{background:rgba(67,97,238,.12);color:#4361EE;}
+  .ptx-time{font-size:6px;color:rgba(255,255,255,.25);}
+  .ptx-amt{font-size:10px;font-weight:800;font-family:var(--fh);}
+  .ptx-amt.dr{color:#ff6b6b;}
+  .ptx-amt.cr{color:#0CBB6A;}
+
+  /* Bottom nav bar */
+  .pnav{display:flex;background:#111028;border-top:1px solid rgba(255,255,255,.07);padding:10px 0 8px;}
+  .pnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+  .pnav-icon{font-size:16px;line-height:1;}
+  .pnav-label{font-size:6px;font-weight:600;color:rgba(255,255,255,.3);}
+  .pnav-item.active .pnav-label{color:#4361EE;}
+  .pnav-item.active .pnav-icon{position:relative;}
+  .pnav-qr{width:40px;height:40px;background:linear-gradient(135deg,#3A0CA3,#4361EE);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 6px 20px rgba(58,12,163,0.5);border:2.5px solid #0a0818;}
+  .pnav-active-dot{width:4px;height:4px;background:#4361EE;border-radius:50%;position:absolute;bottom:-1px;}
+
+  /* METRICS */
+  .metrics{padding:64px 0;background:#FFF;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .mi{text-align:center;padding:20px;}
+  .mv{font-family:var(--fh);font-size:42px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:8px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .ml{font-size:14px;color:var(--text-2);font-weight:500;} .ms{font-size:12px;color:var(--text-3);margin-top:3px;}
+
+  /* FEATURES */
+  .features{padding:130px 0;background:var(--bg-s);}
+  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .fc{background:#FFF;border:1px solid var(--border);border-radius:var(--r-xl);padding:32px;transition:all .3s ease;position:relative;overflow:hidden;box-shadow:var(--sh-card);}
+  .fc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .3s;}
+  .fc:hover{border-color:var(--indigo-b);transform:translateY(-6px);box-shadow:0 24px 48px rgba(58,12,163,0.1);}
+  .fc:hover::before{opacity:1;}
+  .fc.ci::before{background:var(--grad);} .fc.co::before{background:var(--grad-o);}
+  .fc.cg::before{background:linear-gradient(90deg,#0CBB6A,#00F5A0);}
+  .fc.cp::before{background:linear-gradient(90deg,#7B2FBE,#BF5AF2);}
+  .fc.cc::before{background:linear-gradient(90deg,#0096C7,#00B4D8);}
+  .fc.cr::before{background:linear-gradient(90deg,#E5383B,#FF6B6B);}
+  .fc-hero{grid-column:span 3;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start;background:linear-gradient(135deg,#F5F4FF,#EEF0FF);border-color:var(--indigo-b);}
+  .fc-hero::before{opacity:1;background:var(--grad);}
+  .fi{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:20px;transition:transform .3s;}
+  .fc:hover .fi{transform:scale(1.1) rotate(-4deg);}
+  .fc-hero .fi{width:60px;height:60px;border-radius:18px;margin-bottom:0;}
+  .fc h3{font-family:var(--fh);font-size:17px;font-weight:800;margin-bottom:10px;color:var(--text-1);letter-spacing:-.2px;}
+  .fc p{font-size:14px;color:var(--text-2);line-height:1.72;}
+  .fc-hero h3{font-size:21px;} .fc-hero p{font-size:15px;}
+  .ftag{display:inline-block;background:var(--indigo-l);color:var(--indigo-m);padding:5px 14px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.5px;margin-top:14px;border:1px solid var(--indigo-b);font-family:var(--fh);}
+
+  /* HOW IT WORKS */
+  .hiw{padding:130px 0;background:#FFF;}
+  .hiw-g{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+  .hs{display:flex;gap:18px;padding:24px 20px;border-radius:var(--r-lg);transition:all .3s;position:relative;}
+  .hs::after{content:'';position:absolute;left:38px;bottom:-1px;width:2px;height:28px;background:linear-gradient(to bottom,var(--indigo-b),transparent);}
+  .hs:last-child::after{display:none;}
+  .hs:hover{background:var(--bg-s);}
+  .sn{width:44px;height:44px;border-radius:14px;flex-shrink:0;background:var(--indigo-l);border:1.5px solid var(--indigo-b);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:15px;font-weight:800;color:var(--indigo-m);}
+  .hs:hover .sn{background:var(--grad);color:#FFF;border-color:transparent;box-shadow:0 4px 16px rgba(58,12,163,.3);}
+  .sc2{padding-top:8px;}
+  .sc2 h3{font-family:var(--fh);font-size:17px;font-weight:800;margin-bottom:7px;color:var(--text-1);}
+  .sc2 p{font-size:14px;color:var(--text-2);line-height:1.72;}
+  .term{background:#0D0B1E;border:1px solid rgba(67,97,238,.2);border-radius:var(--r-xl);padding:28px;box-shadow:0 32px 64px rgba(58,12,163,.15);position:relative;overflow:hidden;}
+  .term::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 0%,rgba(67,97,238,.06),transparent 60%);}
+  .tbar{display:flex;align-items:center;gap:6px;margin-bottom:20px;}
+  .td{width:10px;height:10px;border-radius:50%;} .tdr{background:#FF5F57;} .tdy{background:#FEBC2E;} .tdg{background:#28C840;}
+  .ttl{font-family:var(--fh);font-size:10px;font-weight:700;color:rgba(255,255,255,.3);margin-left:auto;letter-spacing:1px;}
+  .tbody{font-family:'SF Mono','Fira Code',monospace;font-size:12.5px;line-height:2;}
+  .tp2{color:#7B8CDE;} .tt2{color:#E0E0F0;} .ti2{color:#F7C85A;} .ts2{color:#0CBB6A;} .tf2{color:rgba(255,255,255,.28);}
+  .cur{display:inline-block;width:7px;height:13px;background:#4361EE;animation:blink 1.2s step-end infinite;vertical-align:middle;margin-left:2px;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+  /* CHALLENGES */
+  .chal{padding:130px 0;background:var(--bg-s);}
+  .cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .cc{background:#FFF;border:1px solid var(--border);border-radius:var(--r-xl);padding:36px;position:relative;overflow:hidden;transition:all .35s;box-shadow:var(--sh-card);}
+  .cc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;transition:opacity .3s;opacity:0;}
+  .cc:hover{transform:translateY(-5px);box-shadow:0 24px 48px rgba(58,12,163,.1);border-color:var(--border-h);}
+  .cc:hover::before{opacity:1;}
+  .cc.cbi::before{background:var(--grad);} .cc.cbo::before{background:var(--grad-o);}
+  .cc.cbg::before{background:linear-gradient(90deg,#0CBB6A,#00E676);}
+  .cc.cbp::before{background:linear-gradient(90deg,#7B2FBE,#BF5AF2);}
+  .cc.cbr::before{background:linear-gradient(90deg,#E5383B,#FF6B6B);}
+  .cn{font-family:var(--fh);font-size:48px;font-weight:800;color:rgba(13,10,46,.05);line-height:1;margin-bottom:12px;letter-spacing:-3px;}
+  .cci{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:22px;}
+  .cc h3{font-family:var(--fh);font-size:18px;font-weight:800;margin-bottom:12px;color:var(--text-1);letter-spacing:-.3px;}
+  .cc p{font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:16px;}
+  .csol{background:var(--bg-s);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;}
+  .csol-l{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-family:var(--fh);}
+  .csol p{font-size:13px;color:var(--text-2);margin-bottom:0;}
+  .cwide{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+
+  /* SERVICES */
+  .svc{padding:130px 0;background:#FFF;}
+  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .sc3{background:var(--bg-s);border:1px solid var(--border);border-radius:var(--r-xl);padding:36px;text-align:center;transition:all .3s;position:relative;overflow:hidden;box-shadow:var(--sh-card);}
+  .sc3:hover{transform:translateY(-8px);box-shadow:0 32px 56px rgba(58,12,163,.1);border-color:var(--indigo-b);}
+  .si{width:70px;height:70px;border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;transition:transform .3s;}
+  .sc3:hover .si{transform:scale(1.08) rotate(-4deg);}
+  .sc3 h3{font-family:var(--fh);font-size:18px;font-weight:800;margin-bottom:10px;color:var(--text-1);}
+  .sc3 p{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:20px;}
+  .scode{display:inline-flex;align-items:center;gap:8px;background:#FFF;color:var(--indigo-m);padding:10px 20px;border-radius:12px;font-size:13px;font-weight:800;font-family:var(--fh);border:1.5px solid var(--indigo-b);box-shadow:var(--sh-sm);}
+
+  /* TECH */
+  .tech{padding:130px 0;background:var(--bg-s);}
+  .tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .ti{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 16px;background:#FFF;border:1px solid var(--border);border-radius:var(--r-lg);transition:all .3s;text-align:center;box-shadow:var(--sh-card);}
+  .ti:hover{border-color:var(--indigo-b);transform:translateY(-5px);box-shadow:var(--sh-md);}
+  .te{font-size:30px;} .tn2{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--text-1);} .tr{font-size:11px;color:var(--text-3);}
+
+  /* DOWNLOAD */
+  .dls{padding:130px 0;position:relative;overflow:hidden;background:linear-gradient(135deg,#3A0CA3 0%,#4361EE 60%,#7B2FBE 100%);}
+  .dls::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px;}
+  .dblob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .dblob-1{width:500px;height:500px;top:-100px;right:-100px;background:rgba(255,255,255,.06);}
+  .dblob-2{width:400px;height:400px;bottom:-100px;left:-80px;background:rgba(247,127,0,.12);}
+  .dc{text-align:center;position:relative;z-index:2;max-width:700px;margin:0 auto;}
+  .dlw{display:flex;justify-content:center;margin-bottom:28px;}
+  .dlic{width:96px;height:96px;border-radius:28px;background:rgba(255,255,255,.12);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;box-shadow:0 16px 48px rgba(0,0,0,.2);overflow:hidden;}
+  .dlic img{width:100%;height:100%;object-fit:cover;}
+  .dtit{font-family:var(--fh);font-size:clamp(34px,5vw,58px);font-weight:800;letter-spacing:-2px;margin-bottom:16px;line-height:1.1;color:#FFF;}
+  .dtit em{color:rgba(255,255,255,.75);font-style:normal;}
+  .dsub{font-size:17px;color:rgba(255,255,255,.72);max-width:480px;margin:0 auto 44px;line-height:1.75;}
+  .dcta{background:rgba(255,255,255,.08);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--r-2xl);padding:32px 36px;margin-bottom:28px;box-shadow:0 8px 40px rgba(0,0,0,.15);}
+  .dcta-l{font-family:var(--fh);font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:18px;}
+  .dcta-a{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .dmeta{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+  .dmeta span{font-size:13px;color:rgba(255,255,255,.55);font-weight:600;font-family:var(--fh);}
+  .dmeta span::before{content:'✓ ';color:rgba(12,187,106,.9);}
+
+  /* FOOTER */
+  .footer{padding:72px 0 32px;background:#FFF;border-top:1px solid var(--border);}
+  .fl{display:grid;grid-template-columns:1fr auto;gap:48px;margin-bottom:48px;}
+  .fb2{max-width:300px;}
+  .flr{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .flr-img{width:38px;height:38px;border-radius:11px;overflow:hidden;box-shadow:var(--sh-sm);}
+  .flr-img img{width:100%;height:100%;object-fit:cover;}
+  .fbn{font-family:var(--fh);font-size:20px;font-weight:800;color:var(--text-1);}
+  .fd{font-size:14px;color:var(--text-3);line-height:1.7;}
+  .fcols{display:flex;gap:56px;}
+  .fcol{display:flex;flex-direction:column;gap:10px;}
+  .fcol h4{font-family:var(--fh);font-size:11px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;}
+  .fcol a{font-size:14px;color:var(--text-2);font-weight:500;transition:color .2s;}
+  .fcol a:hover{color:var(--indigo-m);}
+  .fbot{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3);font-weight:500;flex-wrap:wrap;gap:10px;}
+  .fbot a{color:var(--text-3);transition:color .2s;}
+  .fbot a:hover{color:var(--indigo-m);}
+
+  /* ══ GO TO TOP BUTTON ══ */
+  .gtt{position:fixed;bottom:32px;right:32px;z-index:900;width:48px;height:48px;background:var(--grad);border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(58,12,163,0.35);cursor:pointer;border:none;opacity:0;transform:translateY(20px) scale(0.8);transition:all .35s cubic-bezier(.16,1,.3,1);pointer-events:none;}
+  .gtt.show{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+  .gtt:hover{transform:translateY(-4px) scale(1.05);box-shadow:0 16px 48px rgba(58,12,163,0.45);}
+  .gtt:active{transform:scale(0.95);}
+  .gtt svg{transition:transform .2s;}
+  .gtt:hover svg{transform:translateY(-2px);}
+
+  /* RESPONSIVE */
+  @media(max-width:1024px){
+    .fgrid{grid-template-columns:1fr 1fr;}
+    .fc-hero{grid-column:span 2;}
+    .cgrid{grid-template-columns:1fr;}
+    .cwide{grid-column:span 1;grid-template-columns:1fr;}
+    .mgrid{grid-template-columns:repeat(2,1fr);}
+    .nav-pill{display:none;}
+  }
+  @media(max-width:968px){
+    .hero-grid{grid-template-columns:1fr;text-align:center;gap:56px;}
+    .hsub,.hbadge,.h-stats{margin-left:auto;margin-right:auto;}
+    .h-stats{justify-content:center;}
+    .dl-box,.h-links{max-width:480px;margin-left:auto;margin-right:auto;}
+    .dl-box-actions{justify-content:center;}
+    .h-links{justify-content:center;}
+    .hiw-g{grid-template-columns:1fr;}
+    .term{display:none;}
+    .sgrid{grid-template-columns:1fr 1fr;}
+    .fl{grid-template-columns:1fr;}
+    .vring-1,.vring-2,.fb-1,.fb-2{display:none;}
+  }
+  @media(max-width:768px){
+    .nav-pill{display:none;}
+    .nav-cta{display:none;}
+    .ntog{display:flex;}
+    .nav-drawer{display:block;}
+    .fgrid{grid-template-columns:1fr;}
+    .fc-hero{grid-column:span 1;grid-template-columns:1fr;}
+    .sgrid{grid-template-columns:1fr;}
+    .tgrid{grid-template-columns:repeat(2,1fr);}
+    .fcols{gap:28px;}
+    .h-stats{flex-wrap:wrap;gap:14px;}
+    .dcta-a{flex-direction:column;align-items:center;}
+    .mgrid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:480px){
+    .h1{letter-spacing:-1.5px;}
+    .dl-box{padding:18px 20px;}
+    .dl-box-actions{flex-direction:column;}
+    .btn-dl{width:100%;justify-content:center;}
+    .h-links{flex-direction:column;align-items:center;}
+    .tgrid{grid-template-columns:repeat(2,1fr);}
+    .mgrid{grid-template-columns:1fr 1fr;}
+    .fbot{flex-direction:column;text-align:center;}
+    .dmeta{flex-direction:column;gap:8px;}
+    .fcols{flex-direction:column;gap:20px;}
+    .dcta{padding:24px 20px;}
+    .stit{letter-spacing:-1px;}
+    .gtt{bottom:20px;right:20px;}
+  }
+  </style>
+</head>
+<body>
+
+<!-- ══ GO TO TOP ══ -->
+<button class="gtt" id="gtt" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<!-- ══ MOBILE DRAWER ══ -->
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-bg" id="drawerBg"></div>
+  <div class="nav-drawer-panel">
+    <div class="nav-drawer-links">
+      <a href="#features"><span class="ndot"></span>Features</a>
+      <a href="#how-it-works"><span class="ndot"></span>How It Works</a>
+      <a href="#challenges"><span class="ndot"></span>Challenges</a>
+      <a href="#services"><span class="ndot"></span>Services</a>
+      <a href="#tech"><span class="ndot"></span>Tech Stack</a>
+    </div>
+    <div class="nav-drawer-cta">
+      <a href="https://github.com/itsnishant089/EdgePay/releases/download/v1.0.0/EdgePay-V.1.0.0.apk" download>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download APK — Free
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="nav" id="nav">
+  <div class="ctr">
+    <div class="nav-in">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-img">
+          <img src="EdgePay_Icon.png" alt="EdgePay Icon">
+        </div>
+        EdgePay
+      </a>
+
+      <div class="nav-pill" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#challenges">Challenges</a>
+        <a href="#services">Services</a>
+        <a href="#tech">Tech Stack</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="https://github.com/itsnishant089/EdgePay/releases/download/v1.0.0/EdgePay-V.1.0.0.apk" class="nav-cta" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download APK
+        </a>
+        <button class="ntog" id="ntog" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero" id="hero">
+  <div class="h-blob h-blob-1"></div>
+  <div class="h-blob h-blob-2"></div>
+  <div class="h-blob h-blob-3"></div>
+  <div class="h-dots"></div>
+  <div class="ctr">
+    <div class="hero-grid">
+      <div>
+        <div class="hbadge"><span class="bdot"></span>Live · Works Offline — Zero Internet Required</div>
+        <h1 class="h1">Payments Without<br><span class="gt">Internet</span></h1>
+        <p class="hsub">EdgePay brings full UPI banking to every Indian, regardless of internet access. Built on USSD technology, it works on any phone, any network — even where 2G is a luxury.</p>
+
+        <div class="dl-box">
+          <div class="dl-box-lbl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <em>Download Now</em>
+            Free · No Sign-up · 23 MB
+          </div>
+          <div class="dl-box-actions">
+            <div class="btn-wrap">
+              <div class="pulse-ring"></div>
+              <a href="https://github.com/itsnishant089/EdgePay/releases/download/v1.0.0/EdgePay-V.1.0.0.apk" class="btn btn-dl" download>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download APK — v1.0.0
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-links">
+          <a href="https://github.com/itsnishant089/EdgePay" target="_blank" rel="noopener" class="btn btn-gh">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub Repo
+          </a>
+          <a href="https://www.canva.com/design/DAHE_N0pWHQ/boJM9mtnELXLe0Tfh5cveA/edit?utm_content=DAHE_N0pWHQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener" class="btn btn-pp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            View Pitch Deck
+          </a>
+        </div>
+
+        <div class="h-stats">
+          <div><span class="sv">23MB</span><span class="sl">App Size</span></div>
+          <div class="sdiv"></div>
+          <div><span class="sv">0mb</span><span class="sl">Data Needed</span></div>
+          <div class="sdiv"></div>
+          <div><span class="sv">USSD</span><span class="sl">Powered</span></div>
+          <div class="sdiv"></div>
+          <div><span class="sv">100%</span><span class="sl">Open Source</span></div>
+        </div>
+      </div>
+
+      <!-- ══ PHONE MOCKUP ══ -->
+      <div class="hvisual">
+        <div class="vring vring-1"></div>
+        <div class="vring vring-2"></div>
+        <div class="fb fb-1"><span class="fbd" style="background:#0CBB6A"></span><span style="color:var(--text-1)">Offline Active</span></div>
+        <div class="fb fb-2"><span class="fbd" style="background:#4361EE"></span><span style="color:var(--text-1)">Payment Sent ✓</span></div>
+
+        <div class="phone">
+          <div class="phone-shell">
+            <div class="phone-screen">
+              <!-- Status bar -->
+              <div class="ps-bar">
+                <span class="ps-time">2:50</span>
+                <div class="ps-icons">
+                  <div class="ps-sig">
+                    <span style="width:3px;height:5px;opacity:.4;border-radius:1px;"></span>
+                    <span style="width:3px;height:7px;opacity:.6;border-radius:1px;"></span>
+                    <span style="width:3px;height:9px;opacity:.8;border-radius:1px;"></span>
+                    <span style="width:3px;height:11px;border-radius:1px;"></span>
+                  </div>
+                  <div class="ps-bat"><div class="ps-bat-fill"></div></div>
+                </div>
+              </div>
+
+              <!-- App top bar -->
+              <div class="papp-hdr">
+                <div class="papp-logo">
+                  <div class="papp-icon">
+                    <img src="EdgePay_Icon.png" alt="EdgePay" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                  </div>
+                  <span class="papp-name">EdgePay</span>
+                  <span class="papp-offline">● OFFLINE</span>
+                </div>
+                <div class="papp-settings">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                </div>
+              </div>
+
+              <!-- Welcome -->
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0 18px 12px;">
+                <div class="pwelcome">
+                  <span class="pwelcome-sub">Welcome back,</span>
+                  <span class="pwelcome-name">Nishant</span>
+                </div>
+                <div class="pavatar">N</div>
+              </div>
+
+              <!-- Balance card -->
+              <div class="pcard">
+                <div class="pcard-label">
+                  CHECK BALANCE
+                  <div class="pcard-offline-badge"><span></span>OFFLINE</div>
+                </div>
+                <div class="pcard-amount">₹1,000.00</div>
+                <div class="pcard-bank">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                  Linked Bank: SBI
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="pactions">
+                <div class="pact-btn">
+                  <div class="pact-icon" style="background:rgba(67,97,238,.15);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4361EE" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h.01M17 7h.01M7 17h.01"/><rect x="10" y="10" width="4" height="4"/></svg>
+                  </div>
+                  <span class="pact-label">Scan</span>
+                </div>
+                <div class="pact-btn">
+                  <div class="pact-icon" style="background:rgba(123,47,190,.15);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B2FBE" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </div>
+                  <span class="pact-label">Send</span>
+                </div>
+                <div class="pact-btn">
+                  <div class="pact-icon" style="background:rgba(247,127,0,.15);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F77F00" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <span class="pact-label">History</span>
+                </div>
+                <div class="pact-btn">
+                  <div class="pact-icon" style="background:rgba(12,187,106,.15);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0CBB6A" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                  </div>
+                  <span class="pact-label">Account</span>
+                </div>
+              </div>
+
+              <!-- History -->
+              <div class="phist">
+                <div class="phist-title">History</div>
+                <div class="ptx">
+                  <div class="ptx-av" style="background:rgba(67,97,238,.2);font-size:10px;">B</div>
+                  <div class="ptx-info">
+                    <div class="ptx-name">bhupenderjangra8053...</div>
+                    <div class="ptx-meta">
+                      <span class="ptx-tag sent">🧑 Sent</span>
+                      <span class="ptx-time">1h ago</span>
+                    </div>
+                  </div>
+                  <div class="ptx-amt dr">−₹1.00</div>
+                </div>
+                <div class="ptx">
+                  <div class="ptx-av" style="background:rgba(12,187,106,.2);font-size:10px;">R</div>
+                  <div class="ptx-info">
+                    <div class="ptx-name">Rahul Sharma</div>
+                    <div class="ptx-meta">
+                      <span class="ptx-tag rcv">↓ Received</span>
+                      <span class="ptx-time">3h ago</span>
+                    </div>
+                  </div>
+                  <div class="ptx-amt cr">+₹500</div>
+                </div>
+              </div>
+
+              <!-- Bottom nav -->
+              <div class="pnav">
+                <div class="pnav-item active">
+                  <svg class="pnav-icon" width="18" height="18" viewBox="0 0 24 24" fill="#4361EE"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                  <span class="pnav-label" style="color:#4361EE">Home</span>
+                  <div class="pnav-active-dot"></div>
+                </div>
+                <div class="pnav-item">
+                  <svg class="pnav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  <span class="pnav-label">Send</span>
+                </div>
+                <div class="pnav-item">
+                  <div class="pnav-qr">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  </div>
+                </div>
+                <div class="pnav-item">
+                  <svg class="pnav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span class="pnav-label">History</span>
+                </div>
+                <div class="pnav-item">
+                  <svg class="pnav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span class="pnav-label">Account</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ METRICS ══════════ -->
+<section class="metrics">
+  <div class="ctr">
+    <div class="mgrid">
+      <div class="mi" data-aos="fu"><div class="mv">850M+</div><div class="ml">Indians without reliable internet</div><div class="ms">The audience EdgePay was built for</div></div>
+      <div class="mi" data-aos="fu" data-aos-delay="100"><div class="mv">USSD</div><div class="ml">National USSD protocol</div><div class="ms">Works on every carrier in India</div></div>
+      <div class="mi" data-aos="fu" data-aos-delay="200"><div class="mv">20 sec</div><div class="ml">Average payment time</div><div class="ms">From tap to bank-confirmed transfer</div></div>
+      <div class="mi" data-aos="fu" data-aos-delay="300"><div class="mv">100%</div><div class="ml">SMS-verified confirmation</div><div class="ms">Dual-channel reliability engine</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section class="features" id="features">
+  <div class="ctr">
+    <div class="sh">
+      <span class="stag">Core Features</span>
+      <h2 class="stit">Built for <span class="gt">Real India</span></h2>
+      <p class="ssub">Where internet is a privilege, not a given. EdgePay bridges the digital payments divide using infrastructure that already exists — every GSM tower, every SIM card.</p>
+    </div>
+    <div class="fgrid">
+      <div class="fc fc-hero ci" data-aos="fu">
+        <div class="fi" style="background:var(--indigo-l)">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4361EE" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        </div>
+        <div>
+          <h3>Offline USSD Banking — The Primary Engine</h3>
+          <p>EdgePay's core innovation is a fully abstracted USSD payment layer built on India's National Unified USSD Platform. Payments are processed through the phone's native GSM radio — working on every Indian carrier at just 2G speeds, deep in rural areas where data connectivity doesn't exist.</p>
+          <div class="ftag">Primary Payments Engine</div>
+        </div>
+      </div>
+      <div class="fc cp" data-aos="fu" data-aos-delay="100">
+        <div class="fi" style="background:var(--purple-l)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7B2FBE" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg></div>
+        <h3>Edge Wallet</h3>
+        <p>A fully UPI-integrated digital wallet with PIN verification and locally encrypted transaction state. Users can send, receive, and manage funds using only their UPI VPA — no bank app or internet required for most operations.</p>
+      </div>
+      <div class="fc cg" data-aos="fu" data-aos-delay="200">
+        <div class="fi" style="background:var(--green-l)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0CBB6A" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><rect x="10" y="10" width="4" height="4"/></svg></div>
+        <h3>QR Code Scanner</h3>
+        <p>Vision Camera integration with ML Kit-powered decoding. Merchant UPI ID and amount auto-populate into the payment form. Handles low-light conditions and both static and merchant-displayed QR codes at under 120ms on budget devices.</p>
+      </div>
+      <div class="fc co" data-aos="fu" data-aos-delay="300">
+        <div class="fi" style="background:var(--orange-l)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F77F00" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <h3>SMS Confirmation Engine</h3>
+        <p>A dual-path SMS system guarantees payment reliability. Listens via BroadcastReceiver for real-time bank debit alerts, and also polls the inbox as fallback. A custom multi-pattern parser extracts transaction IDs, amounts, and timestamps — confirming payments within seconds.</p>
+      </div>
+      <div class="fc cr" data-aos="fu" data-aos-delay="400">
+        <div class="fi" style="background:var(--red-l)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E5383B" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Account Services</h3>
+        <p>Full-service banking through secure USSD channels — check balances, change UPI PIN, and request money without opening a browser or bank app. Every action is handled by NPCI's verified banking infrastructure.</p>
+      </div>
+      <div class="fc cc" data-aos="fu" data-aos-delay="500">
+        <div class="fi" style="background:var(--cyan-l)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0096C7" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M18.66 5.34l-2.12 2.12"/></svg></div>
+        <h3>Transaction History</h3>
+        <p>All USSD and wallet transactions are stored locally in encrypted, structured format. History includes merchant details, timestamps, transaction references, and status indicators — parsed from SMS confirmations. Private by default, no cloud sync needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section class="hiw" id="how-it-works">
+  <div class="ctr">
+    <div class="sh">
+      <span class="stag">How It Works</span>
+      <h2 class="stit">A Payment in <span class="gt">3 Steps</span></h2>
+      <p class="ssub">No internet handshake. No server round-trips. EdgePay talks directly to India's national USSD banking infrastructure — the same system powering every major bank's offline UPI feature.</p>
+    </div>
+    <div class="hiw-g">
+      <div>
+        <div class="hs" data-aos="fr">
+          <div class="sn">01</div>
+          <div class="sc2"><h3>Enter or Scan Recipient Details</h3><p>Type the recipient's UPI VPA or point your camera at any UPI QR code. The QR scanner auto-decodes the VPA and pre-fills amount if embedded. The app validates the UPI ID format before proceeding to the next step.</p></div>
+        </div>
+        <div class="hs" data-aos="fr" data-aos-delay="150">
+          <div class="sn">02</div>
+          <div class="sc2"><h3>Authenticate with UPI PIN</h3><p>Review the payment summary — recipient, amount, linked bank. Enter your UPI PIN using EdgePay's secure PIN pad. The app constructs the full USSD command and dispatches it through Android's native telephony stack via <code style="background:var(--indigo-l);color:var(--indigo-m);padding:1px 6px;border-radius:4px;font-size:12px">ACTION_CALL</code> — completely offline.</p></div>
+        </div>
+        <div class="hs" data-aos="fr" data-aos-delay="300">
+          <div class="sn">03</div>
+          <div class="sc2"><h3>Instant Bank Confirmation</h3><p>Once the USSD session completes, the bank sends a standard SMS debit alert. EdgePay's SMS engine intercepts this, parses the transaction reference and amount, and surfaces a clear "Payment Successful" card within 2–3 seconds. Logged locally.</p></div>
+        </div>
+      </div>
+      <div class="term" data-aos="fl">
+        <div class="tbar">
+          <div class="td tdr"></div><div class="td tdy"></div><div class="td tdg"></div>
+          <span class="ttl">USSD BRIDGE — LIVE SESSION</span>
+        </div>
+        <div class="tbody" id="termBody">
+          <div><span class="tp2">edge</span> <span class="tf2">$</span> <span class="tt2">initiate_payment</span></div>
+          <div><span class="tf2">  → recipient: </span><span class="ti2">rahul@upi</span></div>
+          <div><span class="tf2">  → amount:    </span><span class="ti2">₹200.00</span></div>
+          <div><span class="tf2">  → bank:      </span><span class="ti2">SBI (linked)</span></div>
+          <div>&nbsp;</div>
+          <div><span class="tp2">ussd</span> <span class="tf2">$</span> <span class="tt2">build_string</span></div>
+          <div><span class="tf2">  → output: </span><span class="ti2">[payment string constructed]</span></div>
+          <div>&nbsp;</div>
+          <div><span class="tp2">tel </span> <span class="tf2">$</span> <span class="tt2">dial</span> <span class="tf2">[ACTION_CALL]</span></div>
+          <div><span class="tf2">  → GSM session opened...</span></div>
+          <div><span class="tf2">  → NPCI response: </span><span class="ts2">TXN_SUCCESS</span></div>
+          <div>&nbsp;</div>
+          <div><span class="tp2">sms </span> <span class="tf2">$</span> <span class="tt2">listen_broadcast</span></div>
+          <div><span class="tf2">  → debit alert: </span><span class="ts2">₹200 deducted</span></div>
+          <div><span class="tf2">  → ref: </span><span class="ti2">SBI240326001234</span></div>
+          <div>&nbsp;</div>
+          <div><span class="ts2">✓ Payment confirmed in 2.7s</span> <span class="cur"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CHALLENGES ══════════ -->
+<section class="chal" id="challenges">
+  <div class="ctr">
+    <div class="sh">
+      <span class="stag">Engineering Challenges</span>
+      <h2 class="stit">Problems We <span class="ot">Solved</span></h2>
+      <p class="ssub">Building offline payments on Android wasn't calling an API. It meant reverse-engineering telephony primitives, fighting OS restrictions, and rethinking how mobile apps confirm financial transactions.</p>
+    </div>
+    <div class="cgrid">
+      <div class="cc cbi" data-aos="fu">
+        <div class="cn">01</div>
+        <div class="cci" style="background:var(--indigo-l)">📡</div>
+        <h3>Executing USSD Without Internet</h3>
+        <p>Modern Android sandboxes restrict programmatic USSD dialing. Strings with <code style="background:var(--indigo-l);color:var(--indigo-m);padding:1px 5px;border-radius:4px;font-size:12px">*</code> and <code style="background:var(--indigo-l);color:var(--indigo-m);padding:1px 5px;border-radius:4px;font-size:12px">#</code> are intercepted at the dialer layer. CALL_PHONE permission management also differs wildly across Android 7–14 and OEM firmware variants.</p>
+        <div class="csol"><div class="csol-l" style="color:var(--indigo-m)">Solution</div><p>Built a Kotlin-native TelephonyManager bridge exposed to React Native via a custom NativeModule. The USSD string is URL-encoded, wrapped in a <code style="font-size:12px">tel:</code> intent, and dispatched via <code style="font-size:12px">startActivity(ACTION_CALL)</code> — bypassing the RN bridge entirely for telephony.</p></div>
+      </div>
+      <div class="cc cbo" data-aos="fu" data-aos-delay="100">
+        <div class="cn">02</div>
+        <div class="cci" style="background:var(--orange-l)">💬</div>
+        <h3>Parsing Unstructured Bank SMS</h3>
+        <p>India has 50+ banks, each formatting its debit confirmation SMS differently — varying terminology, date formats, merchant name placements, and encoding quirks. A naive regex fails across all but one bank's format.</p>
+        <div class="csol"><div class="csol-l" style="color:var(--orange)">Solution</div><p>Built a multi-pattern SMS parser with a ranked priority queue of 12+ regex templates tuned to specific bank formats. Extracts a normalised struct — {amount, bank, txnRef, timestamp} — regardless of input variation, with BroadcastReceiver + inbox polling dual-channel strategy.</p></div>
+      </div>
+      <div class="cc cbg" data-aos="fu" data-aos-delay="200">
+        <div class="cn">03</div>
+        <div class="cci" style="background:var(--green-l)">📷</div>
+        <h3>Real-Time QR Scanning Performance</h3>
+        <p>Running ML Kit BarcodeScanning on every camera frame at 30fps caused severe frame drops and UI thread blocking on low-end Android devices. The RN bridge introduced serialisation overhead on every native call.</p>
+        <div class="csol"><div class="csol-l" style="color:var(--green)">Solution</div><p>Integrated react-native-vision-camera with Worklets to run barcode decoding on a native thread — never touching the JS or UI thread. Results forward to React Native only on successful decode. Cut scan latency from ~800ms to under 120ms on budget devices.</p></div>
+      </div>
+      <div class="cc cbp" data-aos="fu" data-aos-delay="300">
+        <div class="cn">04</div>
+        <div class="cci" style="background:var(--purple-l)">🔐</div>
+        <h3>Secure PIN Handling Off the Heap</h3>
+        <p>JavaScript's GC doesn't guarantee immediate memory reclamation, meaning UPI PINs can linger in heap memory long after a transaction — exposable via memory dumps on rooted devices.</p>
+        <div class="csol"><div class="csol-l" style="color:var(--purple)">Solution</div><p>PIN values captured natively and passed directly to the Kotlin USSD bridge via a single-use NativeModule call, never persisted to React Native state. Stored in a <code style="font-size:12px">CharArray</code> and zeroed via <code style="font-size:12px">Arrays.fill(pinArray, '\0')</code> immediately after use — aligned with OWASP MASVS-CRYPTO.</p></div>
+      </div>
+      <div class="cc cbr cwide" data-aos="fu" data-aos-delay="400">
+        <div>
+          <div class="cn">05</div>
+          <div class="cci" style="background:var(--red-l)">🤝</div>
+          <h3>Bridging React Native & Android Telephony</h3>
+          <p>React Native has no built-in telephony API. The standard <code style="background:var(--red-l);color:var(--red);padding:1px 6px;border-radius:4px;font-size:12px">Linking.openURL('tel:...')</code> opens the dialer instead of dialing USSD, breaking the in-app payment flow. Additionally, the RN New Architecture introduced breaking changes to the NativeModule contract.</p>
+        </div>
+        <div>
+          <div class="csol" style="margin-top:0">
+            <div class="csol-l" style="color:var(--red)">Solution</div>
+            <p>Authored <code style="font-size:12px">UssdModule.kt</code> — a fully typed RN NativeModule exposing <code style="font-size:12px">dialUssd(ussdString, promise)</code> to JavaScript. Implements both the legacy NativeModule interface and a TurboModule spec file for forward compatibility. Dispatches via a properly encoded Intent and resolves the Promise with success/error payload.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+            <div style="padding:7px 14px;background:var(--red-l);border:1px solid rgba(229,56,59,.2);border-radius:8px;font-size:11px;font-weight:800;color:var(--red);font-family:var(--fh)">TypeScript Typed</div>
+            <div style="padding:7px 14px;background:var(--indigo-l);border:1px solid var(--indigo-b);border-radius:8px;font-size:11px;font-weight:800;color:var(--indigo-m);font-family:var(--fh)">Old + New Arch</div>
+            <div style="padding:7px 14px;background:var(--green-l);border:1px solid var(--green-b);border-radius:8px;font-size:11px;font-weight:800;color:var(--green);font-family:var(--fh)">Promise-Based</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SERVICES ══════════ -->
+<section class="svc" id="services">
+  <div class="ctr">
+    <div class="sh">
+      <span class="stag">Banking Services</span>
+      <h2 class="stit">Full Bank Access <span class="gt">via USSD</span></h2>
+      <p class="ssub">Every service is routed through NPCI's National USSD Platform — the same infrastructure your bank uses for its own offline UPI feature.</p>
+    </div>
+    <div class="sgrid">
+      <div class="sc3" data-aos="zi">
+        <div class="si" style="background:var(--green-l)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0CBB6A" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>Check Balance</h3>
+        <p>Instantly retrieve your linked bank account balance via USSD. Works even when your bank's app or website is down, with no data connection. Results within 3–4 seconds of USSD session completion.</p>
+        <div class="scode">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Check Balance
+        </div>
+      </div>
+      <div class="sc3" data-aos="zi" data-aos-delay="150">
+        <div class="si" style="background:var(--orange-l)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F77F00" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+        <h3>Change UPI PIN</h3>
+        <p>Securely reset or update your UPI PIN entirely through USSD prompts — no internet, no OTP email, no bank website. Debit card details verified on the NPCI side, keeping credentials out of EdgePay entirely.</p>
+        <div class="scode">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Change PIN
+        </div>
+      </div>
+      <div class="sc3" data-aos="zi" data-aos-delay="300">
+        <div class="si" style="background:var(--purple-l)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7B2FBE" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <h3>Request Payment</h3>
+        <p>Initiate a collect request to any UPI-registered mobile number with a single tap. They receive a standard UPI collect notification and can approve from any UPI app — great for merchants and shared expenses.</p>
+        <div class="scode">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Request Money
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TECH STACK ══════════ -->
+<section class="tech" id="tech">
+  <div class="ctr">
+    <div class="sh">
+      <span class="stag">Under the Hood</span>
+      <h2 class="stit">Engineered with <span class="gt">Precision</span></h2>
+      <p class="ssub">A carefully chosen stack that marries cross-platform development speed with native Android performance — because offline payments cannot afford to compromise on reliability.</p>
+    </div>
+    <div class="tgrid">
+      <div class="ti" data-aos="fu"><div class="te">⚛️</div><div class="tn2">React Native</div><div class="tr">Cross-platform UI</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="50"><div class="te">📱</div><div class="tn2">Android Native</div><div class="tr">Telephony & SMS</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="100"><div class="te">🔷</div><div class="tn2">TypeScript</div><div class="tr">Type-safe JS</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="150"><div class="te">🟣</div><div class="tn2">Kotlin</div><div class="tr">NativeModules bridge</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="200"><div class="te">📷</div><div class="tn2">Vision Camera</div><div class="tr">QR frame processor</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="250"><div class="te">📡</div><div class="tn2">USSD Bridge</div><div class="tr">Payment dispatch</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="300"><div class="te">💬</div><div class="tn2">SMS Parser</div><div class="tr">Confirmation engine</div></div>
+      <div class="ti" data-aos="fu" data-aos-delay="350"><div class="te">🔥</div><div class="tn2">Hermes Engine</div><div class="tr">Optimised JS runtime</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DOWNLOAD ══════════ -->
+<section class="dls" id="download">
+  <div class="dblob dblob-1"></div>
+  <div class="dblob dblob-2"></div>
+  <div class="ctr" style="position:relative;z-index:2;">
+    <div class="dc">
+      <div class="dlw">
+        <div class="dlic">
+          <img src="EdgePay_Icon.png" alt="EdgePay">
+        </div>
+      </div>
+      <h2 class="dtit">Ready to Go <em>Offline?</em></h2>
+      <p class="dsub">Download EdgePay and start making UPI payments with nothing but a GSM signal. No data plan, no bank app, no internet dependency — ever.</p>
+      <div class="dcta">
+        <div class="dcta-l">📦 EdgePay v1.0.0 — Latest Release</div>
+        <div class="dcta-a">
+          <div class="btn-wrap">
+            <div class="pulse-ring" style="border-color:rgba(255,255,255,.3)"></div>
+            <a href="https://github.com/itsnishant089/EdgePay/releases/download/v1.0.0/EdgePay-V.1.0.0.apk" class="btn-wh" download>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download APK — 23MB
+            </a>
+          </div>
+          <a href="https://github.com/itsnishant089/EdgePay" target="_blank" rel="noopener" class="btn-dg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub Repo
+          </a>
+          <a href="https://www.canva.com/design/DAHE_N0pWHQ/boJM9mtnELXLe0Tfh5cveA/edit?utm_content=DAHE_N0pWHQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener" class="btn-dg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            Pitch Deck
+          </a>
+        </div>
+      </div>
+      <div class="dmeta">
+        <span>Android 7.0+</span>
+        <span>No Root Required</span>
+        <span>No Ads or Trackers</span>
+        <span>Open Source</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="ctr">
+    <div class="fl">
+      <div class="fb2">
+        <div class="flr">
+          <div class="flr-img">
+            <img src="EdgePay_Icon.png" alt="EdgePay Icon">
+          </div>
+          <span class="fbn">EdgePay</span>
+        </div>
+        <p class="fd">Offline payments for every Indian. Bridging the digital divide with USSD banking technology that works anywhere a GSM signal exists.</p>
+      </div>
+      <div class="fcols">
+        <div class="fcol">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#challenges">Challenges</a>
+          <a href="#services">Services</a>
+          <a href="#download">Download</a>
+        </div>
+        <div class="fcol">
+          <h4>Resources</h4>
+          <a href="https://github.com/itsnishant089/EdgePay" target="_blank" rel="noopener">GitHub Repo</a>
+          <a href="https://github.com/itsnishant089/EdgePay/releases/download/v1.0.0/EdgePay-V.1.0.0.apk" download>Download APK</a>
+          <a href="https://www.canva.com/design/DAHE_N0pWHQ/boJM9mtnELXLe0Tfh5cveA/edit?utm_content=DAHE_N0pWHQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" rel="noopener">Pitch Deck</a>
+          <a href="#tech">Tech Stack</a>
+        </div>
+      </div>
+    </div>
+    <div class="fbot">
+      <p>© 2026 EdgePay — Built by Team The Last Brain Cells</p>
+      <a href="https://github.com/itsnishant089/EdgePay" target="_blank" rel="noopener">View on GitHub →</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  // Navbar scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('sc', window.scrollY > 40), {passive:true});
+
+  // Go to top button
+  const gtt = document.getElementById('gtt');
+  window.addEventListener('scroll', () => gtt.classList.toggle('show', window.scrollY > 400), {passive:true});
+
+  // Mobile drawer
+  const tog = document.getElementById('ntog');
+  const drawer = document.getElementById('navDrawer');
+  const bg = document.getElementById('drawerBg');
+  
+  function openDrawer() { drawer.classList.add('open'); tog.classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeDrawer() { drawer.classList.remove('open'); tog.classList.remove('open'); document.body.style.overflow=''; }
+  
+  tog.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
+  bg.addEventListener('click', closeDrawer);
+  drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+
+  // Active pill nav link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const pillLinks = document.querySelectorAll('.nav-pill a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+    pillLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  }, {passive:true});
+
+  // AOS
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const d = parseInt(e.target.getAttribute('data-aos-delay') || 0);
+        setTimeout(() => e.target.classList.add('vis'), d);
+      }
+    });
+  }, { threshold:.12, rootMargin:'0px 0px -40px 0px' });
+  document.querySelectorAll('[data-aos]').forEach(el => obs.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+
+  // Phone parallax
+  const phone = document.querySelector('.phone');
+  if (phone) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY < 900) phone.style.transform = `translateY(${window.scrollY * 0.06}px) rotate(-1.5deg)`;
+    }, {passive:true});
+  }
+
+  // Terminal reveal
+  const tb = document.getElementById('termBody');
+  if (tb) {
+    const lines = tb.querySelectorAll('div');
+    let done = false;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !done) {
+        done = true;
+        lines.forEach((l,i) => { l.style.opacity='0'; setTimeout(() => { l.style.opacity='1'; l.style.transition='opacity .15s'; }, i*110); });
+      }
+    }, {threshold:.3}).observe(tb);
+    lines.forEach(l => l.style.opacity='0');
+  }
+
+  // Metric counter
+  document.querySelectorAll('.mv').forEach(el => {
+    const txt = el.textContent;
+    const num = parseFloat(txt.replace(/[^0-9.]/g,''));
+    if (!num) return;
+    const sfx = txt.replace(/[0-9.]/g,'');
+    let done = false;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !done) {
+        done = true;
+        let s = null;
+        const step = ts => {
+          if (!s) s = ts;
+          const p = Math.min((ts-s)/1200,1);
+          const ease = 1 - Math.pow(1-p,3);
+          el.textContent = (num*ease >= 10 ? Math.round(num*ease) : (num*ease).toFixed(1)) + sfx;
+          if (p<1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }, {threshold:.5}).observe(el);
+  });
+})();
+</script>
+</body>
+</html>
