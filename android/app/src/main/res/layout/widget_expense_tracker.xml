@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    EdgePay Expense Tracker Widget (2x2 Bold)
+    Matches the user provided "Spent X% of Salary" design.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/expense_widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_home_bg"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Spent"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="-8dp" />
+
+    <TextView
+        android:id="@+id/expense_widget_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0%"
+        android:textColor="#FF453A"
+        android:textSize="72sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.05"
+        android:layout_marginVertical="-10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="of Salary"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="-8dp" />
+
+    <!-- Progress indication (Hidden numeric) -->
+    <TextView
+        android:id="@+id/expense_widget_spent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <TextView
+        android:id="@+id/expense_widget_budget"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <ProgressBar
+         android:id="@+id/expense_widget_progress"
+         android:layout_width="match_parent"
+         android:layout_height="2dp"
+         android:layout_marginTop="16dp"
+         style="?android:attr/progressBarStyleHorizontal"
+         android:progressTint="#FF453A"
+         android:progressBackgroundTint="#22FFFFFF" />
+
+</LinearLayout>

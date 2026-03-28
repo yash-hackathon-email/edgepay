@@ -81,6 +81,10 @@ export interface UserData {
   currency: string;
   bank: string;
   isOnboarded: boolean;
+  goalAmount: number;
+  monthlyBudget: number;
+  spentThisMonth: number;
+  budgetResetDay: number; // 1-31
 }
 
 // ─── Settings Types ──────────────────────────────────────────────────
@@ -91,6 +95,9 @@ export interface AppSettings {
   maxTransactionAmount: number;
   pinHash: string;
   isBiometricEnabled: boolean;
+  isSoundboxEnabled: boolean;
+  soundboxLanguage: 'en' | 'hi' | 'mr' | 'ur' | 'bn' | 'kn' | 'or' | 'pa';
+  isWidgetEnabled: boolean;
 }
 
 // ─── Store Types ─────────────────────────────────────────────────────
@@ -134,6 +141,8 @@ export interface AppStore {
   // Auth
   isAuthenticated: boolean;
   setAuthenticated: (val: boolean) => void;
+  recalculateSpending: () => void;
+  checkAndResetBudget: () => void;
 }
 
 // ─── Navigation Types ────────────────────────────────────────────────

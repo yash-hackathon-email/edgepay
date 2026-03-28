@@ -8,6 +8,7 @@ import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.edgepay.app.sms.SmsPackage
 import com.edgepay.app.ussd.USSDPackage
+import com.edgepay.app.widget.PaymentWidgetPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -18,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           add(SmsPackage())
           add(USSDPackage())
+          add(PaymentWidgetPackage())
         },
     )
   }
@@ -27,3 +29,4 @@ class MainApplication : Application(), ReactApplication {
     loadReactNative(this)
   }
 }
+

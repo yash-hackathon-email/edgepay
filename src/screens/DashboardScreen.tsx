@@ -16,8 +16,10 @@ import { sendSMS, isSmsAvailable, onSmsReceived } from '../engine/SmsService';
 import { parseSmsForBalance } from '../engine/SmsParser';
 import { formatCurrency } from '../utils/formatters';
 import { translations } from '../utils/i18n';
+import { syncGoalAmount } from '../engine/WidgetService';
 import { useTheme, spacing, borderRadius, typography, shadows, gradients } from '../theme';
 import { PinScreen, triggerPinError } from '../components/PinScreen';
+import { GoalModal } from '../components/GoalModal';
 import { hashPin } from '../engine/BiometricService';
 import { SMS_GATEWAY_NUMBER_DEFAULT } from '../utils/constants';
 
@@ -39,6 +41,15 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
   
   const t = translations[language] || translations.en;
   const pinHash = useStore(state => state.settings.pinHash);
+
+  const [showGoalModal, setShowGoalModal] = useState(false);
+
+  // Sync goal tracker to widget
+  useEffect(() => {
+    if (user.goalAmount > 0) {
+      syncGoalAmount(user.goalAmount, user.balance);
+    }
+  }, [user.goalAmount, user.balance]);
 
   const fetchBalanceManually = useCallback(async () => {
     // If bank is HDFC, just show dummy balance (revealing it)
@@ -202,8 +213,99 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
             <ActionBtn icon="qrcode-scan" label={t.scan} color="#0A84FF" onPress={() => navigation.navigate('QRScan')} themeColors={colors} />
             <ActionBtn icon="cellphone-nfc" label="UPI Pay" color="#5856D6" onPress={() => navigation.navigate('UpiPayment')} themeColors={colors} />
             <ActionBtn icon="bank-transfer" label={t.send} color="#BF5AF2" onPress={() => navigation.navigate('SendMoney', { method: 'USSD' })} themeColors={colors} />
+            <ActionBtn icon="chart-donut" label="Expenses" color="#30D158" onPress={() => navigation.navigate('ExpenseTracker')} themeColors={colors} />
             <ActionBtn icon="bank-outline" label="Services" color="#FF375F" onPress={() => navigation.navigate('Services')} themeColors={colors} />
             <ActionBtn icon="history" label={t.history} color="#FF9F0A" onPress={() => navigation.navigate('History')} themeColors={colors} />
+          </View>
+
+          {/* Goal Tracker Section */}
+          <View style={s.goalSection}>
+            <View style={s.sectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Icon name="bullseye-arrow" size={18} color={colors.primary} />
+                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Budget & Goals</Text>
+              </View>
+              <TouchableOpacity 
+                activeOpacity={0.7}
+                style={[s.editGoalBadge, { backgroundColor: colors.primary + '15' }]} 
+                onPress={() => navigation.navigate('ExpenseTracker')}
+              >
+                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>Manage Budget</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ gap: 12 }}>
+               {/* Savings Goal Card */}
+               <LinearGradient
+                  colors={theme === 'dark' ? ['#1C1C2E', '#141426'] : ['#F2F2F7', '#E5E5EA']}
+                  style={[s.goalCardFixed, { borderColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : colors.border }]}
+                >
+                   {user.goalAmount > 0 ? (
+                     <>
+                       <View style={s.goalInnerHeader}>
+                          <View>
+                            <Text style={{ color: colors.textTertiary, fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>Savings Goal</Text>
+                            <Text style={{ color: colors.textPrimary, fontSize: 24, fontWeight: '900', marginTop: 2 }}>
+                              ₹{formatCurrency(user.balance).replace('₹', '')}
+                            </Text>
+                          </View>
+                          <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+                             <View style={[s.statusPill, { backgroundColor: (user.balance / user.goalAmount) > 0.9 ? colors.error + '20' : colors.success + '20' }]}>
+                                <Text style={{ color: (user.balance / user.goalAmount) > 0.9 ? colors.error : colors.success, fontSize: 10, fontWeight: '900' }}>
+                                   {Math.floor((user.balance / user.goalAmount) * 100)}%
+                                </Text>
+                             </View>
+                          </View>
+                       </View>
+
+                       <View style={[s.progressWrapper, { backgroundColor: colors.surfaceHighlight }]}>
+                          <LinearGradient
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            colors={ (user.balance / user.goalAmount) > 0.9 ? ['#FF453A', '#FF375F'] : ['#0A84FF', '#5856D6'] }
+                            style={[s.progressFill, { width: `${Math.min((user.balance / user.goalAmount) * 100, 100)}%` }]}
+                          />
+                       </View>
+                     </>
+                   ) : (
+                     <TouchableOpacity style={s.emptyGoal} onPress={() => setShowGoalModal(true)}>
+                        <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '800' }}>Set Savings Goal</Text>
+                     </TouchableOpacity>
+                   )}
+               </LinearGradient>
+
+               {/* Expense/Salary Deduct Card */}
+               <LinearGradient
+                  colors={theme === 'dark' ? ['#2E1C24', '#1F1417'] : ['#FFF5F5', '#FFE5E5']}
+                  style={[s.goalCardFixed, { borderColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : colors.border }]}
+                >
+                   {user.monthlyBudget > 0 ? (
+                     <>
+                        <View style={s.goalInnerHeader}>
+                          <View>
+                            <Text style={{ color: colors.textTertiary, fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>Monthly Salary</Text>
+                            <Text style={{ color: colors.textPrimary, fontSize: 24, fontWeight: '900', marginTop: 2 }}>
+                              ₹{formatCurrency(user.monthlyBudget - user.spentThisMonth).replace('₹', '')} <Text style={{ fontSize: 12, fontWeight: '400', color: colors.textTertiary }}>left</Text>
+                            </Text>
+                          </View>
+                          <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+                             <Text style={{ color: colors.error, fontSize: 14, fontWeight: '900' }}>
+                                -{Math.floor((user.spentThisMonth / user.monthlyBudget) * 100)}%
+                             </Text>
+                          </View>
+                       </View>
+                       <View style={[s.progressWrapper, { backgroundColor: colors.surfaceHighlight }]}>
+                          <View style={[s.progressFill, { backgroundColor: colors.error, width: `${Math.min((user.spentThisMonth / user.monthlyBudget) * 100, 100)}%` }]} />
+                       </View>
+                     </>
+                   ) : (
+                     <TouchableOpacity style={s.emptyGoal} onPress={() => navigation.navigate('ExpenseTracker')}>
+                        <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '800' }}>Insert Monthly Salary / Pocket Money</Text>
+                        <Text style={{ color: colors.textTertiary, fontSize: 11, marginTop: 4 }}>Auto-deduct on every payment</Text>
+                     </TouchableOpacity>
+                   )}
+               </LinearGradient>
+            </View>
           </View>
 
           {/* Transactions */}
@@ -225,6 +327,14 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           </View>
         </View>
       </ScrollView>
+
+      {/* Goal Setting Modal */}
+      <GoalModal
+        visible={showGoalModal}
+        currentGoal={user.goalAmount}
+        onSave={(amt) => setUser({ goalAmount: amt })}
+        onClose={() => setShowGoalModal(false)}
+      />
 
       {/* PIN Verification Modal */}
       <PinScreen
@@ -283,4 +393,14 @@ const s = StyleSheet.create({
   emptyState: { alignItems: 'center', padding: 32, borderRadius: 24, borderStyle: 'dashed', borderWidth: 1 },
   checkBalanceBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   checkBalanceBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+  goalSection: { marginTop: spacing.md, gap: 12 },
+  editGoalBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  goalCardFixed: { borderRadius: 24, padding: 20, borderWidth: 1, minHeight: 140, justifyContent: 'center' },
+  goalInnerHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  statusPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  progressWrapper: { height: 10, borderRadius: 5, overflow: 'hidden', marginBottom: 12 },
+  progressFill: { height: '100%', borderRadius: 5 },
+  goalFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  emptyGoal: { alignItems: 'center' },
+  emptyIconCircle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
 });

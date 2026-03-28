@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">EdgePay</string>
+    <string name="widget_description">Shows recent offline payments and service status.</string>
+    <string name="goal_widget_description">Track your monthly spending goal and progress.</string>
+    <string name="expense_widget_description">Daily expense tracking with auto-renewal.</string>
 </resources>

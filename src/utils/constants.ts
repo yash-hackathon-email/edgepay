@@ -36,6 +36,10 @@ export const DEFAULT_USER = {
   currency: '₹',
   bank: '',
   isOnboarded: false,
+  goalAmount: 0,
+  monthlyBudget: 0,
+  spentThisMonth: 0,
+  budgetResetDay: 1,
 } as const;
 
 // Default settings
@@ -45,6 +49,9 @@ export const DEFAULT_SETTINGS = {
   maxTransactionAmount: MAX_TRANSACTION_AMOUNT_DEFAULT,
   pinHash: '',
   isBiometricEnabled: true,
+  isSoundboxEnabled: true,
+  soundboxLanguage: 'en' as const,
+  isWidgetEnabled: true,
 } as const;
 
 // Network check interval

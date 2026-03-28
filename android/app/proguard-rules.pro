@@ -8,3 +8,15 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# EdgePay Widget / Background Service
+-keep class com.edgepay.app.widget.** { *; }
+-keep class com.edgepay.app.sms.** { *; }
+-keep class com.edgepay.app.ussd.** { *; }
+-keep class com.edgepay.app.soundbox.** { *; }
+
+# React Native
+-keep class com.facebook.react.** { *; }
+-keepclassmembers class * {
+    @com.facebook.react.bridge.ReactMethod *;
+}

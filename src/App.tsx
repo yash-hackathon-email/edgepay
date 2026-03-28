@@ -20,6 +20,7 @@ import { SetupScreen } from './screens/SetupScreen';
 import { LockScreen } from './screens/LockScreen';
 import { AccountServicesScreen } from './screens/AccountServicesScreen';
 import { UpiPaymentScreen } from './screens/UpiPaymentScreen';
+import { ExpenseTrackerScreen } from './screens/ExpenseTrackerScreen';
 
 import { useStore, initializeStore } from './store/useStore';
 import { useNetworkMonitor } from './engine/NetworkDetector';
@@ -30,7 +31,10 @@ import {
 } from './engine/SmsService';
 import { checkUssdPermissions, isUssdAvailable } from './engine/USSDService';
 import { parseSmsForBalance } from './engine/SmsParser';
+import { startSoundbox, stopSoundbox, updateSoundboxConfig } from './engine/PaymentSoundbox';
+import { isWidgetAvailable, startPaymentWidget } from './engine/WidgetService';
 import { translations } from './utils/i18n';
+import { LanguageModal } from './components/LanguageModal';
 import { useTheme, spacing } from './theme';
 
 const Tab = createBottomTabNavigator();
@@ -151,6 +155,7 @@ function AppContent() {
   const setLanguage = useStore(state => state.setLanguage);
 
   const [showSplash, setShowSplash] = useState(true);
+  const [langModalVisible, setLangModalVisible] = useState(false);
 
   // Sync theme with system
   useEffect(() => {
@@ -167,6 +172,10 @@ function AppContent() {
 
   // Automatic balance fetch removed as per user request
 
+  // Read soundbox settings from store
+  const soundboxEnabled = useStore(state => state.settings.isSoundboxEnabled);
+  const soundboxLanguage = useStore(state => state.settings.soundboxLanguage);
+
   useEffect(() => {
     if (!isOnboarded) return;
     let mounted = true;
@@ -178,17 +187,53 @@ function AppContent() {
         setSmsPermissions(smsPerms);
         if (smsPerms.receive) {
           await startSmsListener();
+          // Start Payment Soundbox after SMS listener is active
+          await startSoundbox({
+            enabled: soundboxEnabled ?? true,
+            language: soundboxLanguage || (language as any),
+            announceCredits: true,
+            announceDebits: false,
+            volume: 1.0,
+            speechRate: 0.5,
+          });
+
+          // Auto-start background widget if enabled
+          if (isWidgetAvailable()) {
+            const widgetEnabled = useStore.getState().settings.isWidgetEnabled;
+            if (widgetEnabled !== false) {
+              startPaymentWidget({
+                language: soundboxLanguage || (language as any),
+                announceCredits: true,
+                announceDebits: false,
+              }).catch(console.warn);
+            }
+          }
         }
       }
       if (isUssdAvailable()) {
         const ussdPerms = await checkUssdPermissions();
         setUssdPermissions(ussdPerms);
       }
+      
+      // Initialize Budget Tracking
+      useStore.getState().checkAndResetBudget();
+      useStore.getState().recalculateSpending();
     };
     init();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+      stopSoundbox();
+    };
   }, [isOnboarded, setSmsPermissions, setUssdPermissions]);
+
+  // Keep soundbox config in sync with settings changes
+  useEffect(() => {
+    updateSoundboxConfig({
+      enabled: soundboxEnabled ?? true,
+      language: soundboxLanguage || 'en',
+    });
+  }, [soundboxEnabled, soundboxLanguage]);
 
   // Memoize Navigation Theme
   const navTheme = useMemo(() => {
@@ -224,8 +269,8 @@ function AppContent() {
             <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={toggleTheme}>
               <Icon name={theme === 'dark' ? 'weather-sunny' : 'weather-night'} size={18} color={colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={() => setLanguage(language === 'en' ? 'hi' : 'en')}>
-              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 13 }}>{language === 'en' ? 'HI' : 'EN'}</Text>
+            <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={() => setLangModalVisible(true)}>
+              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 13 }}>{language.toUpperCase()}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -238,7 +283,15 @@ function AppContent() {
           <Tab.Screen name="Account" component={SettingsScreen} />
           <Tab.Screen name="Services" component={AccountServicesScreen} options={{ tabBarButton: () => null }} />
           <Tab.Screen name="UpiPayment" component={UpiPaymentScreen} options={{ tabBarButton: () => null }} />
+          <Tab.Screen name="ExpenseTracker" component={ExpenseTrackerScreen} options={{ tabBarButton: () => null }} />
         </Tab.Navigator>
+
+        <LanguageModal
+          visible={langModalVisible}
+          currentLanguage={language}
+          onSelect={(code) => setLanguage(code as any)}
+          onClose={() => setLangModalVisible(false)}
+        />
       </View>
     </NavigationContainer>
   );

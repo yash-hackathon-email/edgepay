@@ -13,6 +13,13 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
+    <!-- Widget / Background Service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -22,6 +29,7 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true">
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -34,5 +42,51 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+
+      <!-- EdgePay Background Payment Monitor Service -->
+      <service
+        android:name=".widget.PaymentWidgetService"
+        android:enabled="true"
+        android:exported="false"
+        android:foregroundServiceType="dataSync"
+        android:stopWithTask="false" />
+
+      <receiver
+        android:name=".widget.PaymentWidgetBootReceiver"
+        android:enabled="true"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+            <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+        </intent-filter>
+      </receiver>
+
+      <!-- Home Screen Widget -->
+      <receiver android:name=".widget.EdgePayHomeWidget" android:exported="true">
+          <intent-filter>
+              <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+          </intent-filter>
+          <meta-data android:name="android.appwidget.provider"
+                     android:resource="@xml/widget_info" />
+      </receiver>
+
+      <!-- Goal Tracker Widget -->
+      <receiver android:name=".widget.EdgePayGoalWidget" android:exported="true">
+          <intent-filter>
+              <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+          </intent-filter>
+          <meta-data android:name="android.appwidget.provider"
+                     android:resource="@xml/widget_goal_info" />
+      </receiver>
+
+      <!-- Expense Tracker Widget -->
+      <receiver android:name=".widget.EdgePayExpenseWidget" android:exported="true">
+          <intent-filter>
+              <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+          </intent-filter>
+          <meta-data android:name="android.appwidget.provider"
+                     android:resource="@xml/widget_expense_info" />
+      </receiver>
+
     </application>
 </manifest>

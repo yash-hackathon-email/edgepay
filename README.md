@@ -1,74 +1,109 @@
-# ⚡ EdgePay
+# 📱 EdgePay: The Offline Financial Engine
 
-**“EdgePay is a hybrid payment interface that enables transactions in low or no internet environments by leveraging GSM infrastructure and translating modern payment interactions like QR scanning into SMS-based execution.”**
+> **EdgePay** is an offline-first financial inclusion platform that enables digital banking and UPI-style payments in locations with zero internet connectivity. By harnessing the **GSM/USSD (Unstructured Supplementary Service Data)** protocol and NPCI's **NUUP (National Unified USSD Platform)**, EdgePay brings the convenience of digital finance to the 2G/GSM network.
 
 ---
 
-## 🚀 Overview
+## 🌟 Key Features
 
-EdgePay solves the "no internet at checkout" problem. It's a hybrid mobile application that detects your connection status and switches to **GSM Mode** when offline. In this mode, modern payment actions (like scanning a UPI QR code) are translated into secure SMS commands sent to bank gateways, bringing 24/7 transaction reliability to areas with poor data coverage.
+### 1. 📡 Internet-Free Payments
+- No WiFi, 3G, 4G, or 5G required.
+- Works strictly over the **GSM/2G signal**.
+- Leverages the **NPCI *99# (NUUP)** infrastructure for bank-to-bank transfers.
 
-## ✨ Key Features
+### 2. 🏦 Adaptive Bank Logic
+- **SBI Integration**: Uses a custom **SMS-based balance fetch** system. Sends `BAL` request to `09223766666` and parses the incoming `SBIPSG` response for real-time accuracy.
+- **HDFC & Others**: Utilizes the standard **USSD Gateway (*99*3#)** for balance enquiries.
+- Hand-tuned **Regex Parser** for various Indian bank SMS formats.
 
--   📡 **GSM Fallback**: Automatically switches to SMS-based execution when internet is unavailable.
--   📷 **QR-to-SMS Translation**: Scans UPI QR codes and extracts payment data into SMS-compliant formats.
--   🔄 **Transaction Queue**: Local-first architecture with a retry system for pending transactions.
--   🏦 **SMS Parser**: Intelligent bank response detection to update transaction status (Success/Failed).
--   🎨 **Premium UI**: Dark-mode, motion-driven experience following high-end SaaS standards (Notion/Stripe style).
--   🔒 **Privacy First**: No storage of PINs, OTPs, or bank credentials.
+### 3. 🔐 Secure Interaction Design
+- **Masked Dashboard**: Balances are hidden by default (`₹ ******`) for user privacy.
+- **PIN Verification**: Every sensitive action (Check Balance, Send Money) is protected by a PIN challenge modal.
+- **OWASP Compliance**: PIN memory handling follows secure coding practices (zeroed after usage).
 
-## 🛠️ Stack
+### 4. 📷 Offline QR Scanning
+- Integrated **Vision Camera** frame processor for rapid QR decoding.
+- Extracts UPI VPA and Amount directly from the QR code and populates the offline USSD string builder.
 
--   **Frontend**: React Native CLI (JavaScript/TypeScript)
--   **Native Layer**: Kotlin (SMS Manager + BroadcastReceiver)
--   **State**: Zustand (with AsyncStorage persistence)
--   **Navigation**: React Navigation v7
--   **Components**: Custom Vanilla CSS/StyleSheet (Mobile-first, responsive)
--   **Optional Backend**: Node.js + Express (Sync & Analytics)
+---
 
-## 📁 Project Structure
+## 🛠 Technical Architecture
+
+EdgePay is built with a decoupled architecture where the UI layer communicates with a specialized "Banking Engine."
+
+### The Engine Stack (`/src/engine`)
+- **`USSDBuilder.ts`**: The core protocol builder that constructs the encoded strings for NUUP sessions.
+- **`SmsParser.ts`**: The "regex brain" that identifies successful transaction alerts and extracts amounts/reference numbers from bank SMS.
+- **`SmsService.ts / USSDService.ts`**: The bridge between React Native and the **Kotlin NativeModules**.
+
+### The Mobile Stack
+- **Frontend**: React Native, TypeScript.
+- **State Management**: Zustand (for lightning-fast, offline-optimized state sync).
+- **Navigation**: React Navigation (Stack) with custom header transitions.
+- **Styling**: Vanilla CSS/StyleSheet for maximum performance on low-end hardware.
+
+---
+
+## 🏗 Directory Structure
 
 ```text
 EdgePay/
-├── android/                 # Native Android bridge (Kotlin)
+├── android/               # Native Kotlin USSD & SMS bridges
 ├── src/
-│   ├── engine/              # Core JS logic (SMS, Network, Queue)
-│   ├── screens/             # Premium UI Pages
-│   ├── components/          # Reusable UI Atoms
-│   ├── store/               # Zustand Global State
-│   └── utils/               # Formatters & QR Parser
-└── backend/                 # Optional Sync Server
+│   ├── engine/            # The Protocol Engine (SMS/USSD parsing)
+│   ├── screens/           # React Native Screens (Dashboard, PIN, QR)
+│   ├── components/        # Reusable UI Elements (Modals, Custom Inputs)
+│   ├── store/             # Zustand Store (Offline state persistence)
+│   ├── theme/             # Design Tokens & Colour Palettes
+│   └── utils/             # Formatters, i18n, Constants
+├── index.html             # High-Fidelity Engine Life-Simulation
+└── README.md              # Technical Specification
 ```
 
-## 🏁 Getting Started
+---
+
+## 📦 Getting Started
 
 ### Prerequisites
--   Node.js v20+
--   Android Studio & SDK
--   Physical Device (Required for native SMS features)
+- **Node.js** (v18+)
+- **Android SDK** (API 29+)
+- **Physical Android Device**: USSD/SMS listeners cannot be emulated; a real SIM card is required for full functionality.
 
 ### Installation
-1.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-
-2.  **Run Android App**:
-    ```bash
-    npx react-native run-android
-    ```
-
-3.  **Run Optional Backend**:
-    ```bash
-    cd backend
-    npm install
-    npm start
-    ```
-
-## ⚠️ Limitations
--   **Carrier Latency**: SMS delivery depends on GSM network congestion.
--   **Format Dependency**: SMS Parser is optimized for common Indian bank formats.
--   **Demo Mode**: The current build includes a simulation toggle in `TransactionEngine.ts` for testing without costing real SMS credits.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yash-hackathon-email/edgepay.git
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Compile and Install**:
+   ```bash
+   npx react-native run-android --variant=release
+   ```
 
 ---
-*Built as a proof-of-concept for high-reliability financial interfaces.*
+
+## 📜 How it Works (The Workflow)
+
+1. **Onboarding**: User selects their bank (SBI/HDFC).
+2. **Dashboard**: The app checks the Local Store for the last known balance (masked).
+3. **Check Balance**:
+   - If **SBI**, EdgePay triggers an SMS to `09223766666`.
+   - The **SmsListener** waits for a response from `AD-SBIPSG-S`.
+   - Once received, the **SmsParser** extracts the numeric balance and updates the UI.
+4. **Send Money**:
+   - The user inputs a UPI ID or scans a QR.
+   - The **USSDBuilder** creates an NUUP-compliant dial string.
+   - The **UssdModule** dispatches a system-level call to initiate the transaction.
+
+---
+
+## 🏆 Project Recognition
+Developed by **Nishant Kumar** for the **Advanced Agentic Coding Hackathon**.
+
+---
+
+## ⚖️ Disclaimer
+EdgePay is a technical demonstration of USSD/SMS banking protocols. Always ensure you are on a trusted mobile network when using NUUP service (*99#).
