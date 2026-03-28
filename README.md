@@ -100,10 +100,5 @@ EdgePay/
 
 ---
 
-## 🏆 Project Recognition
-Developed by **Nishant Kumar** for the **Advanced Agentic Coding Hackathon**.
-
----
-
 ## ⚖️ Disclaimer
 EdgePay is a technical demonstration of USSD/SMS banking protocols. Always ensure you are on a trusted mobile network when using NUUP service (*99#).
