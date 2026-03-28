@@ -24,6 +24,7 @@ export const translations = {
     scanning: 'Scanning QR code...',
     wait_sms: 'Waiting for Bank Confirmation...',
     done: 'Done',
+    to: 'to',
   },
   hi: {
     home: 'होम',
@@ -48,6 +49,7 @@ export const translations = {
     scanning: 'क्यूआर कोड स्कैन कर रहे हैं...',
     wait_sms: 'बैंक पुष्टिकरण की प्रतीक्षा कर रहे हैं...',
     done: 'पूरा हुआ',
+    to: 'को',
   }
 };
 

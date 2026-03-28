@@ -61,7 +61,12 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
         <View style={styles.bottomRow}>
           <View style={styles.metaRow}>
             <StatusBadge status={status} size="small" />
-            {method === 'USSD' && (
+            {transaction.upiId && (
+              <View style={[styles.upiTag, { backgroundColor: '#5856D615', borderColor: '#5856D630' }]}>
+                <Text style={[styles.upiTagText, { color: '#5856D6' }]}>UPI</Text>
+              </View>
+            )}
+            {method === 'USSD' && !transaction.upiId && (
               <View style={[styles.gsmTag, { backgroundColor: colors.surfaceHighlight, borderColor: colors.border }]}>
                 <Text style={[styles.gsmTagText, { color: colors.textSecondary }]}>USSD</Text>
               </View>
@@ -69,6 +74,12 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
           </View>
           <Text style={[styles.time, { color: colors.textTertiary }]}>{formatRelativeTime(timestamp)}</Text>
         </View>
+        
+        {transaction.upiId && (
+          <Text style={[styles.upiId, { color: colors.textTertiary }]} numberOfLines={1}>
+            {transaction.upiId}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -89,4 +100,7 @@ const styles = StyleSheet.create({
   gsmTag: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1 },
   gsmTagText: { fontSize: 9, fontWeight: '800' },
   time: { fontSize: 11 },
+  upiTag: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1 },
+  upiTagText: { fontSize: 9, fontWeight: '800' },
+  upiId: { fontSize: 10, marginTop: 2, fontWeight: '500' },
 });

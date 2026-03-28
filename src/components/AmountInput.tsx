@@ -1,6 +1,6 @@
 // ─── Amount Input Component ──────────────────────────────────────────
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, StyleSheet, Animated, Easing } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
@@ -11,18 +11,26 @@ interface AmountInputProps {
   placeholder?: string;
   autoFocus?: boolean;
   editable?: boolean;
+  returnKeyType?: TextInput['props']['returnKeyType'];
+  onSubmitEditing?: () => void;
 }
 
-export const AmountInput: React.FC<AmountInputProps> = ({
+export const AmountInput = forwardRef<TextInput, AmountInputProps>(({
   value,
   onChangeText,
   currency = '₹',
   placeholder = '0',
   autoFocus = false,
   editable = true,
-}) => {
+  returnKeyType = 'done',
+  onSubmitEditing,
+}, ref) => {
+  const inputRef = useRef<TextInput>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isFocused, setIsFocused] = useState(false);
+
+  // Expose the inner TextInput ref to the parent
+  useImperativeHandle(ref, () => inputRef.current as TextInput);
 
   useEffect(() => {
     if (value) {
@@ -63,6 +71,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
       >
         <Text style={styles.currency}>{currency}</Text>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           value={value}
           onChangeText={handleChange}
@@ -76,11 +85,13 @@ export const AmountInput: React.FC<AmountInputProps> = ({
           selectionColor={colors.primary}
           accessibilityLabel="Amount input"
           maxLength={10}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
         />
       </Animated.View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   outerContainer: {

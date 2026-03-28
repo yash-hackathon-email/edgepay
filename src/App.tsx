@@ -17,13 +17,16 @@ import { QRScanScreen } from './screens/QRScanScreen';
 import { TransactionHistoryScreen } from './screens/TransactionHistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SetupScreen } from './screens/SetupScreen';
+import { LockScreen } from './screens/LockScreen';
 import { AccountServicesScreen } from './screens/AccountServicesScreen';
+import { UpiPaymentScreen } from './screens/UpiPaymentScreen';
 
 import { useStore, initializeStore } from './store/useStore';
 import { useNetworkMonitor } from './engine/NetworkDetector';
-import { 
-  startSmsListener, checkSmsPermissions, isSmsAvailable, 
-  onSmsReceived, sendSMS 
+import { useColorScheme } from 'react-native';
+import {
+  startSmsListener, checkSmsPermissions, isSmsAvailable,
+  onSmsReceived, sendSMS
 } from './engine/SmsService';
 import { checkUssdPermissions, isUssdAvailable } from './engine/USSDService';
 import { parseSmsForBalance } from './engine/SmsParser';
@@ -130,46 +133,39 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
 // ─── App UI Wrapper ──────────────────────────────────────────────────
 function AppContent() {
+  const insets = useSafeAreaInsets();
   const { colors, theme } = useTheme();
-  
-  // Stable selectors to prevent re-render loops
+  const colorScheme = useColorScheme();
+
   const isOnboarded = useStore(state => state.user.isOnboarded);
+  const isAuthenticated = useStore(state => state.isAuthenticated);
   const gateway = useStore(state => state.settings.gatewayNumber);
   const language = useStore(state => state.language);
-  
-  // Memoized actions
+
   const setUser = useStore(state => state.setUser);
   const setNetworkMode = useStore(state => state.setNetworkMode);
   const setSmsPermissions = useStore(state => state.setSmsPermissions);
   const setUssdPermissions = useStore(state => state.setUssdPermissions);
   const toggleTheme = useStore(state => state.toggleTheme);
+  const setTheme = useStore(state => state.setTheme);
   const setLanguage = useStore(state => state.setLanguage);
-  
+
   const [showSplash, setShowSplash] = useState(true);
 
-  useEffect(() => { 
-    initializeStore().catch(console.error); 
+  // Sync theme with system
+  useEffect(() => {
+    if (colorScheme) {
+      setTheme(colorScheme as 'light' | 'dark');
+    }
+  }, [colorScheme, setTheme]);
+
+  useEffect(() => {
+    initializeStore().catch(console.error);
   }, []);
 
   useNetworkMonitor(setNetworkMode);
 
-  // Stable balance fetch to prevent loops
-  const fetchBalance = useCallback(async () => {
-    if (!isSmsAvailable() || !isOnboarded) return;
-    try {
-      const subscription = onSmsReceived((sms) => {
-        const bal = parseSmsForBalance(sms.body);
-        if (bal !== null) {
-          setUser({ balance: bal });
-          subscription.remove();
-        }
-      });
-      await sendSMS(gateway || '56161', 'BAL');
-      setTimeout(() => subscription.remove(), 10000);
-    } catch (err) {
-      console.warn('[BalanceFetch] Error:', err);
-    }
-  }, [isOnboarded, gateway, setUser]);
+  // Automatic balance fetch removed as per user request
 
   useEffect(() => {
     if (!isOnboarded) return;
@@ -182,7 +178,6 @@ function AppContent() {
         setSmsPermissions(smsPerms);
         if (smsPerms.receive) {
           await startSmsListener();
-          // fetchBalance(); // Disabled as per user request
         }
       }
       if (isUssdAvailable()) {
@@ -193,9 +188,9 @@ function AppContent() {
     init();
 
     return () => { mounted = false; };
-  }, [isOnboarded, fetchBalance, setSmsPermissions, setUssdPermissions]);
+  }, [isOnboarded, setSmsPermissions, setUssdPermissions]);
 
-  // Memoize Navigation Theme to prevent update loops
+  // Memoize Navigation Theme
   const navTheme = useMemo(() => {
     const base = theme === 'dark' ? DarkTheme : DefaultTheme;
     return {
@@ -215,17 +210,24 @@ function AppContent() {
 
   if (showSplash) return <SplashScreen onFinish={() => setShowSplash(false)} />;
   if (!isOnboarded) return <SetupScreen />;
+  if (!isAuthenticated) return <LockScreen />;
 
   return (
     <NavigationContainer theme={navTheme}>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <View style={styles.topControls}>
-          <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={toggleTheme}>
-            <Icon name={theme === 'dark' ? 'weather-sunny' : 'weather-night'} size={18} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={() => setLanguage(language === 'en' ? 'hi' : 'en')}>
-            <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 13 }}>{language === 'en' ? 'HI' : 'EN'}</Text>
-          </TouchableOpacity>
+        <View style={[styles.topControls, { paddingTop: Math.max(insets.top, 16) }]}>
+          <View style={styles.brandRow}>
+            <Image source={require('../assets/EdgePay_Icon.png')} style={styles.headerLogo} />
+            <Text style={[styles.brandName, { color: colors.textPrimary }]}>EdgePay</Text>
+          </View>
+          <View style={styles.controlsRow}>
+            <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={toggleTheme}>
+              <Icon name={theme === 'dark' ? 'weather-sunny' : 'weather-night'} size={18} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.controlBtn, { backgroundColor: colors.surfaceHighlight }]} onPress={() => setLanguage(language === 'en' ? 'hi' : 'en')}>
+              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 13 }}>{language === 'en' ? 'HI' : 'EN'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Tab.Navigator tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
@@ -235,6 +237,7 @@ function AppContent() {
           <Tab.Screen name="History" component={TransactionHistoryScreen} />
           <Tab.Screen name="Account" component={SettingsScreen} />
           <Tab.Screen name="Services" component={AccountServicesScreen} options={{ tabBarButton: () => null }} />
+          <Tab.Screen name="UpiPayment" component={UpiPaymentScreen} options={{ tabBarButton: () => null }} />
         </Tab.Navigator>
       </View>
     </NavigationContainer>
@@ -261,9 +264,13 @@ const styles = StyleSheet.create({
   tabLabel: { fontSize: 10, fontWeight: '700' },
   centerBtnWrap: { top: -16, marginHorizontal: 4 },
   centerBtn: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4 },
-  topControls: { 
-    flexDirection: 'row', justifyContent: 'flex-end', gap: 8, 
-    paddingHorizontal: 16, paddingTop: 44, paddingBottom: 4, zIndex: 10
+  topControls: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, paddingBottom: 4, zIndex: 10,
   },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerLogo: { width: 30, height: 30, borderRadius: 8 },
+  brandName: { fontSize: 18, fontWeight: '900', letterSpacing: 0.5 },
+  controlsRow: { flexDirection: 'row', gap: 8 },
   controlBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
 });

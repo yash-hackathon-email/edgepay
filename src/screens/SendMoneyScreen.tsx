@@ -19,6 +19,7 @@ import { formatCurrency } from '../utils/formatters';
 import { translations } from '../utils/i18n';
 import { useTheme, spacing, borderRadius, typography, gradients } from '../theme';
 import { PinScreen } from '../components/PinScreen';
+import { authenticate, isBiometricAvailable } from '../engine/BiometricService';
 import type { TransactionStatus, TransactionMethod } from '../types';
 
 export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
@@ -40,6 +41,7 @@ export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
   const [showPinEntry, setShowPinEntry] = useState(false);
 
   const executionLocked = useRef(false);
+  const amountRef = useRef<TextInput>(null);
 
   const numericAmount = parseInt(amount, 10) || 0;
   const receiverValidation = validateUssdReceiver(receiver);
@@ -54,8 +56,16 @@ export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
     setShowConfirmModal(true);
   };
 
-  const startPaymentFlow = () => {
+  const startPaymentFlow = async () => {
     setShowConfirmModal(false);
+    
+    // Biometric Verification before Payment
+    const biometricAvailable = await isBiometricAvailable();
+    if (biometricAvailable) {
+      const success = await authenticate(`${t.pay} ${formatCurrency(numericAmount)} ${t.to} ${receiver}`);
+      if (!success) return;
+    }
+    
     setShowPinEntry(true);
   };
 
@@ -179,13 +189,13 @@ export const SendMoneyScreen: React.FC<{ navigation: any; route: any }> = ({
           <Text style={[s.label, { color: colors.textTertiary }]}>{t.receiver}</Text>
           <View style={[s.inputWrap, { borderBottomColor: colors.borderLight }]}>
             <Icon name={receiverValidation.type === 'upi' ? 'at' : 'phone-outline'} size={20} color={colors.primary} />
-            <TextInput style={[s.input, { color: colors.textPrimary }]} value={receiver} onChangeText={setReceiver} placeholder="Mobile or UPI ID" placeholderTextColor={colors.textTertiary} autoCapitalize="none" />
+            <TextInput style={[s.input, { color: colors.textPrimary }]} value={receiver} onChangeText={setReceiver} placeholder="Mobile or UPI ID" placeholderTextColor={colors.textTertiary} autoCapitalize="none" returnKeyType="next" onSubmitEditing={() => amountRef.current?.focus()} blurOnSubmit={false} />
           </View>
           {receiverValidation.error && receiver.length > 3 && <Text style={s.error}>{receiverValidation.error}</Text>}
 
           <View style={{ height: 24 }} />
           <Text style={[s.label, { color: colors.textTertiary }]}>{t.amount}</Text>
-          <AmountInput value={amount} onChangeText={setAmount} />
+          <AmountInput ref={amountRef} value={amount} onChangeText={setAmount} returnKeyType="done" />
         </View>
 
         <TouchableOpacity 

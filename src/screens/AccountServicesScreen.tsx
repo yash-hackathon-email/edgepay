@@ -1,7 +1,7 @@
 // ─── Account Services Screen ─────────────────────────────────────────
 // Provides USSD-based account services: Check Balance, UPI PIN Change, Request Payment
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, Modal,
   ActivityIndicator, ScrollView,
@@ -12,9 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../store/useStore';
 import { dialUssdCode, sendUssdRequest } from '../engine/USSDService';
 import { sanitizeReceiver, validateUssdReceiver } from '../engine/USSDBuilder';
-import { formatCurrency } from '../utils/formatters';
 import { translations } from '../utils/i18n';
-import { useTheme, spacing, typography, gradients } from '../theme';
+import { useTheme, spacing, typography } from '../theme';
 
 export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -27,6 +26,16 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestMobile, setRequestMobile] = useState('');
   const [requestAmount, setRequestAmount] = useState('');
+
+  const amountRef = useRef<any>(null);
+
+  // Auto-advance: when mobile reaches 10 digits, focus amount
+  const handleMobileChange = useCallback((text: string) => {
+    setRequestMobile(text);
+    if (text.replace(/\D/g, '').length >= 10) {
+      amountRef.current?.focus();
+    }
+  }, []);
 
   const executeUssd = async (code: string, label: string) => {
     setIsProcessing(true);
@@ -47,55 +56,31 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
     }
   };
 
-  const handleCheckBalance = () => {
-    executeUssd('*99*3#', 'Checking Balance');
-  };
-
-  const handleUpiPinChange = () => {
-    executeUssd('*99*7#', 'Initiating UPI PIN Change');
-  };
-
-  const handleRequestPayment = () => {
-    const validation = validateUssdReceiver(requestMobile);
-    if (!validation.valid) return;
-    
-    const cleanMobile = sanitizeReceiver(requestMobile);
-    const amt = Math.floor(parseInt(requestAmount, 10) || 0);
-    if (amt <= 0) return;
-
-    const ussdCode = `*99*2*${cleanMobile}*${amt}*1*1`;
-    setShowRequestModal(false);
-    setRequestMobile('');
-    setRequestAmount('');
-    executeUssd(ussdCode, 'Requesting Payment');
-  };
-
   const numericAmount = parseInt(requestAmount, 10) || 0;
-  const mobileValidation = validateUssdReceiver(requestMobile);
-  const isRequestValid = mobileValidation.valid && numericAmount > 0;
+  const isRequestValid = validateUssdReceiver(requestMobile).valid && numericAmount > 0;
 
   const SERVICES = [
     {
       id: 'balance',
       icon: 'bank-check',
       title: 'Check Balance',
-      subtitle: 'View your linked bank account balance via USSD',
+      subtitle: 'View your bank balance via USSD',
       color: '#30D158',
-      onPress: handleCheckBalance,
+      onPress: () => executeUssd('*99*3#', 'Checking Balance'),
     },
     {
       id: 'pin',
       icon: 'lock-reset',
       title: 'Change UPI PIN',
-      subtitle: 'Reset or change your UPI PIN securely',
+      subtitle: 'Securely reset your UPI PIN',
       color: '#FF9F0A',
-      onPress: handleUpiPinChange,
+      onPress: () => executeUssd('*99*7#', 'Initiating PIN Change'),
     },
     {
       id: 'request',
       icon: 'cash-fast',
       title: 'Request Payment',
-      subtitle: 'Request money from any mobile number',
+      subtitle: 'Request money from any mobile',
       color: '#BF5AF2',
       onPress: () => setShowRequestModal(true),
     },
@@ -103,8 +88,12 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
 
   return (
     <View style={[s.screen, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + spacing.sm, borderBottomColor: colors.borderLight }]}>
+      {/* Background Decorative Glow */}
+      <View style={s.bgGlowWrap}>
+        <LinearGradient colors={['rgba(10, 132, 255, 0.12)', 'transparent']} style={s.bgGlow} />
+      </View>
+
+      <View style={[s.header, { paddingTop: Math.max(insets.top, 16), borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={[s.backBtn, { backgroundColor: colors.surfaceHighlight }]}>
           <Icon name="arrow-left" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -112,105 +101,94 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
         <View style={{ width: 36 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
-        {/* Info Banner */}
-        <View style={[s.infoBanner, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
-          <Icon name="information-outline" size={18} color={colors.primary} />
+      <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }}>
+        <View style={[s.infoBox, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '20' }]}>
+          <Icon name="shield-check-outline" size={20} color={colors.primary} />
           <Text style={[s.infoText, { color: colors.textSecondary }]}>
-            These services use secure USSD channels via your bank's *99# service.
+            Secure USSD services provided by your bank. No credentials are stored on this device.
           </Text>
         </View>
 
-        {/* Service Cards */}
         {SERVICES.map((service) => (
           <TouchableOpacity
             key={service.id}
-            style={[s.serviceCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+            style={[s.serviceCard, { backgroundColor: colors.surface, borderColor: 'rgba(255,255,255,0.08)' }]}
             onPress={service.onPress}
-            activeOpacity={0.7}
           >
             <View style={[s.serviceIconWrap, { backgroundColor: service.color + '15' }]}>
-              <Icon name={service.icon} size={28} color={service.color} />
+              <Icon name={service.icon} size={32} color={service.color} />
             </View>
             <View style={s.serviceInfo}>
               <Text style={[s.serviceTitle, { color: colors.textPrimary }]}>{service.title}</Text>
               <Text style={[s.serviceSubtitle, { color: colors.textTertiary }]}>{service.subtitle}</Text>
             </View>
-            <Icon name="chevron-right" size={22} color={colors.textTertiary} />
+            <Icon name="chevron-right" size={24} color={colors.textTertiary} />
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Processing Overlay */}
+      {/* Processing Modal */}
       <Modal visible={isProcessing} transparent animationType="fade">
-        <View style={s.processingOverlay}>
-          <View style={[s.processingCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+        <View style={s.modalOverlay}>
+          <View style={[s.processingCard, { backgroundColor: colors.surfaceElevated, borderColor: 'rgba(255,255,255,0.08)' }]}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={[s.processingText, { color: colors.textPrimary }]}>{processingMessage}</Text>
-            <Text style={[s.processingSubtext, { color: colors.textTertiary }]}>
-              A USSD dialog will appear on your screen. Please follow the prompts.
-            </Text>
+            <Text style={[s.processingSub, { color: colors.textTertiary }]}>Follow the USSD prompts on your screen</Text>
           </View>
         </View>
       </Modal>
 
-      {/* Request Payment Modal */}
+      {/* Request Modal */}
       <Modal visible={showRequestModal} transparent animationType="fade">
-        <View style={s.processingOverlay}>
-          <View style={[s.requestCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+        <View style={s.modalOverlay}>
+          <View style={[s.requestCard, { backgroundColor: colors.surfaceElevated, borderColor: 'rgba(255,255,255,0.08)' }]}>
             <Text style={[s.requestTitle, { color: colors.textPrimary }]}>Request Payment</Text>
-            <Text style={[s.requestSubtitle, { color: colors.textTertiary }]}>
-              Enter the mobile number and amount to request
-            </Text>
 
-            <View style={{ gap: 16, marginTop: 20 }}>
-              <View>
-                <Text style={[s.inputLabel, { color: colors.textTertiary }]}>MOBILE NUMBER</Text>
-                <View style={[s.inputWrap, { borderColor: colors.borderLight, backgroundColor: colors.surfaceHighlight }]}>
-                  <Icon name="phone-outline" size={18} color={colors.primary} />
-                  <TextInput
-                    style={[s.input, { color: colors.textPrimary }]}
-                    value={requestMobile}
-                    onChangeText={setRequestMobile}
-                    placeholder="10-digit mobile number"
-                    placeholderTextColor={colors.textTertiary}
-                    keyboardType="phone-pad"
-                    maxLength={10}
-                  />
-                </View>
-              </View>
-
-              <View>
-                <Text style={[s.inputLabel, { color: colors.textTertiary }]}>AMOUNT (₹)</Text>
-                <View style={[s.inputWrap, { borderColor: colors.borderLight, backgroundColor: colors.surfaceHighlight }]}>
-                  <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800' }}>₹</Text>
-                  <TextInput
-                    style={[s.input, { color: colors.textPrimary }]}
-                    value={requestAmount}
-                    onChangeText={setRequestAmount}
-                    placeholder="Enter amount"
-                    placeholderTextColor={colors.textTertiary}
-                    keyboardType="numeric"
-                  />
-                </View>
+            <View style={s.formGroup}>
+              <Text style={[s.inputLabel, { color: colors.textTertiary }]}>MOBILE NUMBER</Text>
+              <View style={[s.inputWrap, { borderColor: colors.border, backgroundColor: 'rgba(255,255,255,0.02)' }]}>
+                <Icon name="phone" size={18} color={colors.primary} />
+                <TextInput
+                  style={[s.input, { color: colors.textPrimary }]}
+                  value={requestMobile}
+                  onChangeText={handleMobileChange}
+                  placeholder="10-digit number"
+                  placeholderTextColor={colors.textTertiary}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                />
               </View>
             </View>
 
-            <View style={s.requestFooter}>
-              <TouchableOpacity
-                style={s.requestCancelBtn}
-                onPress={() => { setShowRequestModal(false); setRequestMobile(''); setRequestAmount(''); }}
-              >
+            <View style={s.formGroup}>
+              <Text style={[s.inputLabel, { color: colors.textTertiary }]}>AMOUNT (₹)</Text>
+              <View style={[s.inputWrap, { borderColor: colors.border, backgroundColor: 'rgba(255,255,255,0.02)' }]}>
+                <Icon name="currency-inr" size={18} color="#FF375F" />
+                <TextInput
+                  ref={amountRef}
+                  style={[s.input, { color: colors.textPrimary, fontSize: 24, fontWeight: '800' }]}
+                  value={requestAmount}
+                  onChangeText={setRequestAmount}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.textTertiary}
+                  keyboardType="numeric"
+                  returnKeyType="done"
+                />
+              </View>
+            </View>
+
+            <View style={s.modalActions}>
+              <TouchableOpacity style={s.modalBtn} onPress={() => { setShowRequestModal(false); setRequestMobile(''); setRequestAmount(''); }}>
                 <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[s.requestSubmitBtn, !isRequestValid && { opacity: 0.4 }]}
-                onPress={handleRequestPayment}
-                disabled={!isRequestValid}
-              >
-                <LinearGradient colors={gradients.primary} style={s.requestSubmitGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                  <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 14 }}>Request ₹{numericAmount > 0 ? numericAmount : '0'}</Text>
-                </LinearGradient>
+              <TouchableOpacity style={[s.modalBtn, { backgroundColor: colors.primary + '20' }]} onPress={() => {
+                const cleanMobile = sanitizeReceiver(requestMobile);
+                executeUssd(`*99*2*${cleanMobile}*${numericAmount}*1*1#`, 'Requesting Payment');
+                setShowRequestModal(false);
+              }} disabled={!isRequestValid}>
+                <Text style={{ color: colors.primary, fontWeight: '800' }}>Request</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -222,37 +200,28 @@ export const AccountServicesScreen: React.FC<{ navigation: any }> = ({ navigatio
 
 const s = StyleSheet.create({
   screen: { flex: 1 },
+  bgGlowWrap: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  bgGlow: { position: 'absolute', top: -100, left: -100, width: 400, height: 400, borderRadius: 200 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { ...typography.h2 },
-
-  infoBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 14, borderWidth: 1 },
-  infoText: { flex: 1, fontSize: 12, fontWeight: '500', lineHeight: 18 },
-
-  serviceCard: {
-    flexDirection: 'row', alignItems: 'center', padding: 18,
-    borderRadius: 20, borderWidth: 1, gap: 14, elevation: 2,
-  },
-  serviceIconWrap: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  serviceInfo: { flex: 1, gap: 3 },
-  serviceTitle: { fontSize: 16, fontWeight: '800' },
-  serviceSubtitle: { fontSize: 12, fontWeight: '500' },
-
-
-
-  processingOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  processingCard: { borderRadius: 24, padding: 32, borderWidth: 1, alignItems: 'center', gap: 16, width: '100%' },
-  processingText: { fontSize: 18, fontWeight: '800' },
-  processingSubtext: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
-
-  requestCard: { borderRadius: 24, padding: 24, borderWidth: 1, width: '100%' },
-  requestTitle: { ...typography.h2, textAlign: 'center' },
-  requestSubtitle: { fontSize: 12, textAlign: 'center', marginTop: 4 },
-  inputLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1, marginBottom: 6 },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, gap: 10 },
-  input: { flex: 1, fontSize: 16, fontWeight: '700', paddingVertical: 12 },
-  requestFooter: { flexDirection: 'row', marginTop: 24, gap: 12 },
-  requestCancelBtn: { flex: 1, padding: 16, alignItems: 'center', justifyContent: 'center' },
-  requestSubmitBtn: { flex: 2, borderRadius: 14, overflow: 'hidden' },
-  requestSubmitGrad: { padding: 16, alignItems: 'center' },
+  headerTitle: { ...typography.h3, fontWeight: '900', letterSpacing: 0.5 },
+  infoBox: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, borderWidth: 1 },
+  infoText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 20 },
+  serviceCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 28, borderWidth: 1, gap: 16, elevation: 4 },
+  serviceIconWrap: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  serviceInfo: { flex: 1, gap: 4 },
+  serviceTitle: { fontSize: 18, fontWeight: '900' },
+  serviceSubtitle: { fontSize: 12, fontWeight: '600', opacity: 0.6 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', padding: 24 },
+  processingCard: { borderRadius: 32, padding: 40, borderWidth: 1, alignItems: 'center', gap: 20 },
+  processingText: { fontSize: 20, fontWeight: '900' },
+  processingSub: { fontSize: 13, fontWeight: '600', opacity: 0.6, textAlign: 'center' },
+  requestCard: { borderRadius: 32, padding: 32, borderWidth: 1, gap: 24 },
+  requestTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
+  formGroup: { gap: 8 },
+  inputLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, gap: 12 },
+  input: { flex: 1, fontSize: 16, fontWeight: '700', paddingVertical: 14 },
+  modalActions: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  modalBtn: { flex: 1, padding: 18, borderRadius: 16, alignItems: 'center' },
 });

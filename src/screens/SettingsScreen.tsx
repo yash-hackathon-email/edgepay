@@ -1,7 +1,7 @@
 // ─── Settings Screen ────────────────────────────────────────────────
 // Themed and Localized Settings for EdgePay
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, Alert, Switch,
@@ -23,6 +23,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   const { user, settings, setUser, setSettings } = useStore();
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone);
+  const phoneRef = useRef<any>(null);
   const [showOldPin, setShowOldPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
   const [showConfirmPin, setShowConfirmPin] = useState(false);
@@ -65,12 +66,12 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
         <View style={[s.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
           <View style={s.row}>
             <Text style={[s.label, { color: colors.textSecondary }]}>Full Name</Text>
-            <TextInput style={[s.input, { color: colors.textPrimary }]} value={name} onChangeText={setName} />
+            <TextInput style={[s.input, { color: colors.textPrimary }]} value={name} onChangeText={setName} returnKeyType="next" onSubmitEditing={() => phoneRef.current?.focus()} blurOnSubmit={false} />
           </View>
           <View style={[s.divider, { backgroundColor: colors.border }]} />
           <View style={s.row}>
             <Text style={[s.label, { color: colors.textSecondary }]}>Phone Number</Text>
-            <TextInput style={[s.input, { color: colors.textPrimary }]} value={phone} keyboardType="phone-pad" onChangeText={setPhone} maxLength={10} />
+            <TextInput ref={phoneRef} style={[s.input, { color: colors.textPrimary }]} value={phone} keyboardType="phone-pad" onChangeText={setPhone} maxLength={10} returnKeyType="done" />
           </View>
         </View>
 

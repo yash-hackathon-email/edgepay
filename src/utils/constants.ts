@@ -7,7 +7,7 @@ export const USSD_PAYMENT_PREFIX = '*99*1*';
 // SMS format template (kept for transaction confirmation detection)
 export const SMS_COMMAND_PREFIX = 'PAY';
 export const DEFAULT_SMS_TEMPLATE = 'PAY {amount} TO {receiver}';
-export const SMS_GATEWAY_NUMBER_DEFAULT = '56161';
+export const SMS_GATEWAY_NUMBER_DEFAULT = '09223766666';
 
 // Transaction limits
 export const SMS_TIMEOUT_MS = 30000;
@@ -16,6 +16,8 @@ export const MAX_TRANSACTION_AMOUNT_DEFAULT = 100000;
 
 // Queue
 export const QUEUE_PROCESS_INTERVAL_MS = 15000;
+export const MAX_RETRY_COUNT = 3;
+export const RETRY_DELAY_MS = 10000;
 
 // Storage keys
 export const STORAGE_KEYS = {

@@ -1,7 +1,7 @@
 // ─── Setup / Onboarding Screen ──────────────────────────────────────
 // Handles first-time setup, user details, bank selection, and initial permissions
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, Image, StyleSheet, TextInput, TouchableOpacity,
   Animated, Alert, ScrollView, Dimensions, Platform,
@@ -35,6 +35,16 @@ export const SetupScreen: React.FC = () => {
   const [showPinSet, setShowPinSet] = useState(false);
   const [showPinConfirm, setShowPinConfirm] = useState(false);
   const [pendingPin, setPendingPin] = useState('');
+
+  const phoneRef = useRef<any>(null);
+
+  // Auto-advance: when phone reaches 10 digits, blur to show bank selection
+  const handlePhoneChange = useCallback((text: string) => {
+    setPhone(text);
+    if (text.replace(/\D/g, '').length >= 10) {
+      phoneRef.current?.blur();
+    }
+  }, []);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
@@ -174,7 +184,7 @@ export const SetupScreen: React.FC = () => {
                 <Text style={s.label}>FULL NAME</Text>
                 <View style={s.inputWrapper}>
                   <Icon name="account-outline" size={20} color={colors.textTertiary} />
-                  <TextInput style={s.input} value={name} onChangeText={setName} placeholder="Enter your name" placeholderTextColor={colors.textTertiary} selectionColor={colors.primary} />
+                  <TextInput style={s.input} value={name} onChangeText={setName} placeholder="Enter your name" placeholderTextColor={colors.textTertiary} selectionColor={colors.primary} returnKeyType="next" onSubmitEditing={() => phoneRef.current?.focus()} blurOnSubmit={false} />
                 </View>
               </View>
 
@@ -182,7 +192,7 @@ export const SetupScreen: React.FC = () => {
                 <Text style={s.label}>MOBILE NUMBER</Text>
                 <View style={s.inputWrapper}>
                   <Icon name="phone-outline" size={20} color={colors.textTertiary} />
-                  <TextInput style={s.input} value={phone} onChangeText={setPhone} placeholder="10-digit mobile" placeholderTextColor={colors.textTertiary} keyboardType="phone-pad" maxLength={10} selectionColor={colors.primary} />
+                  <TextInput ref={phoneRef} style={s.input} value={phone} onChangeText={handlePhoneChange} placeholder="10-digit mobile" placeholderTextColor={colors.textTertiary} keyboardType="phone-pad" maxLength={10} selectionColor={colors.primary} returnKeyType="done" />
                 </View>
                 <Text style={s.hint}>Registered with your bank for USSD (*99#)</Text>
               </View>

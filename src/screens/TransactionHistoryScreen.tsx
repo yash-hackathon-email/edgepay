@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Alert,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Alert, ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,7 +11,7 @@ import { TransactionCard } from '../components/TransactionCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { useStore } from '../store/useStore';
 import { formatCurrency, formatFullDate, formatTransactionId } from '../utils/formatters';
-import { useTheme, spacing, borderRadius, typography, gradients } from '../theme';
+import { useTheme, spacing, typography } from '../theme';
 import { translations } from '../utils/i18n';
 import type { Transaction, TransactionStatus } from '../types';
 
@@ -20,20 +20,17 @@ type Filter = 'ALL' | TransactionStatus;
 export const TransactionHistoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { colors, theme } = useTheme();
-  const language = useStore(state => state.language);
+  const { language, transactions, cancelTransaction } = useStore();
   const t = translations[language] || translations.en;
-  const transactions = useStore(state => state.transactions);
-  const cancelTransaction = useStore(state => state.cancelTransaction);
   
   const [filter, setFilter] = useState<Filter>('ALL');
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
   const filters: { key: Filter; label: string }[] = [
-    { key: 'ALL', label: t.home }, // Use labels from i18n
+    { key: 'ALL', label: 'All' },
     { key: 'SUCCESS', label: 'Success' },
     { key: 'PENDING', label: 'Pending' },
     { key: 'FAILED', label: 'Failed' },
-    { key: 'CANCELLED', label: 'Cancelled' },
   ];
 
   const filtered = useMemo(() => {
@@ -62,7 +59,12 @@ export const TransactionHistoryScreen: React.FC<{ navigation: any }> = ({ naviga
 
   return (
     <View style={[s.screen, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + spacing.sm, borderBottomColor: colors.borderLight }]}>
+      {/* Background Decorative Glow */}
+      <View style={s.bgGlowWrap}>
+        <LinearGradient colors={['rgba(10, 132, 255, 0.12)', 'transparent']} style={s.bgGlow} />
+      </View>
+
+      <View style={[s.header, { paddingTop: Math.max(insets.top, 16), borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={[s.backBtn, { backgroundColor: colors.surfaceHighlight }]}>
           <Icon name="arrow-left" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -70,71 +72,94 @@ export const TransactionHistoryScreen: React.FC<{ navigation: any }> = ({ naviga
         <View style={{ width: 36 }} />
       </View>
 
-      <LinearGradient colors={theme === 'dark' ? ['#1A1A1A', '#0A0A0A'] : ['#FFF', '#F8F8F8']} style={[s.statsRow, { borderColor: colors.cardBorder }]}>
-        <View style={s.stat}>
-          <Text style={[s.statVal, { color: colors.textPrimary }]}>{stats.count}</Text>
-          <Text style={[s.statLbl, { color: colors.textTertiary }]}>{language === 'en' ? 'TOTAL' : 'कुल'}</Text>
-        </View>
-        <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-        <View style={s.stat}>
-          <Text style={[s.statVal, { color: colors.success }]}>{stats.success}</Text>
-          <Text style={[s.statLbl, { color: colors.textTertiary }]}>{language === 'en' ? 'PAID' : 'सफल'}</Text>
-        </View>
-        <View style={[s.statDiv, { backgroundColor: colors.border }]} />
-        <View style={s.stat}>
-          <Text style={[s.statVal, { color: colors.primary }]}>{formatCurrency(stats.totalAmount)}</Text>
-          <Text style={[s.statLbl, { color: colors.textTertiary }]}>{language === 'en' ? 'AMOUNT' : 'राशि'}</Text>
-        </View>
-      </LinearGradient>
-
-      <View style={s.filterRow}>
-        {(filters || []).map(f => (
-          <TouchableOpacity 
-            key={f.key} 
-            style={[s.filterBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }, filter === f.key && { borderColor: colors.primary, backgroundColor: colors.primary + '10' }]} 
-            onPress={() => setFilter(f.key)}
-          >
-            <Text style={[s.filterText, { color: colors.textTertiary }, filter === f.key && { color: colors.primary, fontWeight: '700' }]}>{f.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <FlatList
-        data={filtered}
-        renderItem={({ item }) => <TransactionCard transaction={item} onPress={setSelectedTxn} />}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        ListEmptyComponent={
-          <View style={s.empty}>
-            <Icon name="history" size={64} color={colors.textTertiary} />
-            <Text style={[s.emptyTitle, { color: colors.textPrimary }]}>{language === 'en' ? 'No transactions' : 'कोई लेनदेन नहीं'}</Text>
-            <Text style={{ color: colors.textTertiary }}>{language === 'en' ? 'Send money to see history' : 'इतिहास देखने के लिए पैसे भेजें'}</Text>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 40 }}>
+        <LinearGradient colors={theme === 'dark' ? ['#1A1B2E', '#101018'] : ['#FFFFFF', '#F9F9F9']} style={[s.statsRow, { borderColor: 'rgba(255,255,255,0.08)' }]}>
+          <View style={s.stat}>
+            <Text style={[s.statVal, { color: colors.textPrimary }]}>{stats.count}</Text>
+            <Text style={[s.statLbl, { color: colors.textTertiary }]}>TOTAL</Text>
           </View>
-        }
-      />
+          <View style={[s.statDiv, { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
+          <View style={s.stat}>
+            <Text style={[s.statVal, { color: colors.success }]}>{stats.success}</Text>
+            <Text style={[s.statLbl, { color: colors.textTertiary }]}>PAID</Text>
+          </View>
+          <View style={[s.statDiv, { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
+          <View style={s.stat}>
+            <Text style={[s.statVal, { color: colors.primary }]}>{formatCurrency(stats.totalAmount)}</Text>
+            <Text style={[s.statLbl, { color: colors.textTertiary }]}>AMOUNT</Text>
+          </View>
+        </LinearGradient>
+
+        <View style={s.filterWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+            {(filters || []).map(f => (
+              <TouchableOpacity 
+                key={f.key} 
+                style={[s.filterBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }, filter === f.key && { borderColor: colors.primary, backgroundColor: colors.primary + '20' }]} 
+                onPress={() => setFilter(f.key)}
+              >
+                <Text style={[s.filterText, { color: colors.textTertiary }, filter === f.key && { color: colors.primary, fontWeight: '800' }]}>{f.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={s.listWrap}>
+          {filtered.length > 0 ? (
+            filtered.map((item, idx) => (
+              <View key={item.id}>
+                <TransactionCard transaction={item} onPress={setSelectedTxn} />
+                {idx < filtered.length - 1 && <View style={{ height: 12 }} />}
+              </View>
+            ))
+          ) : (
+            <View style={s.empty}>
+              <View style={[s.emptyIcon, { backgroundColor: colors.surfaceHighlight }]}>
+                <Icon name="history" size={48} color={colors.textTertiary} />
+              </View>
+              <Text style={[s.emptyTitle, { color: colors.textPrimary }]}>{language === 'en' ? 'No transactions' : 'कोई लेनदेन नहीं'}</Text>
+              <Text style={{ color: colors.textTertiary, textAlign: 'center' }}>
+                {language === 'en' ? 'No transactions found here' : 'यहाँ कोई लेनदेन नहीं मिला'}
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
       {/* Detail Modal */}
-      <Modal visible={!!selectedTxn} transparent animationType="slide" onRequestClose={() => setSelectedTxn(null)}>
+      <Modal visible={!!selectedTxn} transparent animationType="slide">
         <View style={s.modalOverlay}>
-          <View style={[s.modalContent, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 20 }]}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setSelectedTxn(null)} />
+          <View style={[s.modalContent, { backgroundColor: colors.surfaceElevated, paddingBottom: insets.bottom + 40, borderColor: 'rgba(255,255,255,0.08)' }]}>
             <View style={[s.modalHandle, { backgroundColor: colors.border }]} />
             {selectedTxn && (
               <>
                 <View style={s.modalHeader}>
-                  <Text style={[s.modalTitle, { color: colors.textPrimary }]}>{language === 'en' ? 'Details' : 'विवरण'}</Text>
-                  <TouchableOpacity onPress={() => setSelectedTxn(null)}>
+                  <Text style={[s.modalTitle, { color: colors.textPrimary }]}>Details</Text>
+                  <TouchableOpacity onPress={() => setSelectedTxn(null)} style={s.closeBox}>
                     <Icon name="close" size={24} color={colors.textTertiary} />
                   </TouchableOpacity>
                 </View>
+                
                 <View style={s.detailBody}>
-                  <Text style={[s.detailInfo, { color: colors.textTertiary }]}>{formatTransactionId(selectedTxn.id)}</Text>
-                  <Text style={[s.detailAmount, { color: colors.textPrimary }]}>{formatCurrency(selectedTxn.amount)}</Text>
-                  <StatusBadge status={selectedTxn.status} size="medium" />
+                  <View style={[s.detailIconWrap, { backgroundColor: (selectedTxn.status === 'SUCCESS' ? colors.success : colors.error) + '15' }]}>
+                    <Icon name={selectedTxn.status === 'SUCCESS' ? 'check-decagram' : 'alert-circle'} size={56} color={selectedTxn.status === 'SUCCESS' ? colors.success : colors.error} />
+                  </View>
                   
-                  <View style={s.row}><Text style={[s.label, { color: colors.textTertiary }]}>Recipient</Text><Text style={[s.value, { color: colors.textPrimary }]}>{selectedTxn.receiverName || selectedTxn.receiver}</Text></View>
-                  <View style={s.row}><Text style={[s.label, { color: colors.textTertiary }]}>Time</Text><Text style={[s.value, { color: colors.textPrimary }]}>{formatFullDate(selectedTxn.timestamp)}</Text></View>
-                  {selectedTxn.ussdCommand && <View style={s.row}><Text style={[s.label, { color: colors.textTertiary }]}>Command</Text><Text style={[s.value, { color: colors.primary, fontFamily: 'monospace' }]}>{selectedTxn.ussdCommand}</Text></View>}
+                  <Text style={[s.detailAmount, { color: colors.textPrimary }]}>{formatCurrency(selectedTxn.amount)}</Text>
+                  <Text style={[s.detailStatus, { color: selectedTxn.status === 'SUCCESS' ? colors.success : colors.textTertiary }]}>{selectedTxn.status}</Text>
+                  
+                  <View style={s.summaryCard}>
+                    <Row label="TO" value={selectedTxn.receiverName || selectedTxn.receiver} colors={colors} />
+                    <Row label="TXN ID" value={formatTransactionId(selectedTxn.id)} colors={colors} />
+                    <Row label="TIME" value={formatFullDate(selectedTxn.timestamp)} colors={colors} />
+                  </View>
+
+                  {selectedTxn.status === 'PENDING' && (
+                    <TouchableOpacity style={s.cancelBtn} onPress={() => handleCancel(selectedTxn)}>
+                      <Text style={s.cancelText}>Cancel Transaction</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </>
             )}
@@ -145,30 +170,45 @@ export const TransactionHistoryScreen: React.FC<{ navigation: any }> = ({ naviga
   );
 };
 
+const Row = ({ label, value, colors }: any) => (
+  <View style={s.row}>
+    <Text style={{ color: colors.textTertiary, fontSize: 10, fontWeight: '800', letterSpacing: 1.5 }}>{label}</Text>
+    <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>{value}</Text>
+  </View>
+);
+
 const s = StyleSheet.create({
   screen: { flex: 1 },
+  bgGlowWrap: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  bgGlow: { position: 'absolute', top: -100, left: -100, width: 400, height: 400, borderRadius: 200 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { ...typography.h2 },
-  statsRow: { flexDirection: 'row', margin: 16, borderRadius: 16, padding: 20, borderWidth: 1 },
-  stat: { flex: 1, alignItems: 'center' },
-  statVal: { ...typography.h3, fontSize: 18 },
-  statLbl: { fontSize: 9, fontWeight: '700', marginTop: 4 },
-  statDiv: { width: 1, height: 24 },
-  filterRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 16 },
-  filterBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  filterText: { fontSize: 11, fontWeight: '600' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 80, gap: 12 },
-  emptyTitle: { ...typography.h2 },
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
-  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, minHeight: 400 },
+  headerTitle: { ...typography.h3, fontWeight: '900', letterSpacing: 0.5 },
+  statsRow: { flexDirection: 'row', margin: 16, borderRadius: 24, padding: 24, borderWidth: 1, elevation: 8 },
+  stat: { flex: 1, alignItems: 'center', gap: 4 },
+  statVal: { fontSize: 18, fontWeight: '900' },
+  statLbl: { fontSize: 9, fontWeight: '800', opacity: 0.6 },
+  statDiv: { width: 1, height: 30, opacity: 0.2 },
+  filterWrapper: { marginBottom: 16 },
+  filterRow: { gap: 10, paddingHorizontal: 16 },
+  filterBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1 },
+  filterText: { fontSize: 12, fontWeight: '700' },
+  listWrap: { paddingHorizontal: 16 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, gap: 16, paddingHorizontal: 40 },
+  emptyIcon: { width: 80, height: 80, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 18, fontWeight: '900' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
+  modalContent: { borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 24, borderWidth: 1 },
   modalHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { ...typography.h2 },
-  detailBody: { alignItems: 'center', gap: 16 },
-  detailInfo: { fontSize: 12, opacity: 0.6 },
-  detailAmount: { fontSize: 40, fontWeight: '800' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 8 },
-  label: { fontSize: 13 },
-  value: { fontSize: 14, fontWeight: '600' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 },
+  modalTitle: { fontSize: 20, fontWeight: '900' },
+  closeBox: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  detailBody: { alignItems: 'center', gap: 20 },
+  detailIconWrap: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
+  detailAmount: { fontSize: 44, fontWeight: '900', letterSpacing: -1 },
+  detailStatus: { fontSize: 12, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
+  summaryCard: { width: '100%', borderRadius: 24, padding: 20, borderWidth: 1, gap: 14, backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cancelBtn: { marginTop: 12, paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, backgroundColor: '#FF3B3015', borderWidth: 1, borderColor: '#FF3B3020' },
+  cancelText: { color: '#FF3B30', fontWeight: '800', fontSize: 14 },
 });

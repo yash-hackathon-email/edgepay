@@ -17,11 +17,14 @@ import { parseSmsForBalance } from '../engine/SmsParser';
 import { formatCurrency } from '../utils/formatters';
 import { translations } from '../utils/i18n';
 import { useTheme, spacing, borderRadius, typography, shadows, gradients } from '../theme';
+import { PinScreen, triggerPinError } from '../components/PinScreen';
+import { hashPin } from '../engine/BiometricService';
+import { SMS_GATEWAY_NUMBER_DEFAULT } from '../utils/constants';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { colors, theme } = useTheme();
-  
+
   // Stable selectors to prevent re-render loops
   const user = useStore(state => state.user);
   const transactions = useStore(state => state.transactions);
@@ -29,43 +32,103 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
   const language = useStore(state => state.language);
   const gateway = useStore(state => state.settings.gatewayNumber);
   const setUser = useStore(state => state.setUser);
-  
+
   const [refreshing, setRefreshing] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [showPinVerify, setShowPinVerify] = useState(false);
+  
   const t = translations[language] || translations.en;
+  const pinHash = useStore(state => state.settings.pinHash);
 
   const fetchBalanceManually = useCallback(async () => {
-    if (!isSmsAvailable()) return;
-    setRefreshing(true);
-    try {
-      const subscription = onSmsReceived((sms) => {
-        const bal = parseSmsForBalance(sms.body);
-        if (bal !== null) {
-          setUser({ balance: bal });
-          setRefreshing(false);
-          subscription.remove();
-        }
-      });
-      await sendSMS(gateway || '56161', 'BAL');
+    // If bank is HDFC, just show dummy balance (revealing it)
+    if (user.bank === 'HDFC') {
+      setIsRevealed(true);
+      setRefreshing(false);
+      return;
+    }
+
+    // SBI Logic: Read recent messages directly
+    if (user.bank === 'SBI') {
+      if (!isSmsAvailable()) {
+        Alert.alert('Permissions', 'Please enable SMS permissions in settings.');
+        return;
+      }
       
-      // Auto-stop refresh after 15s if no SMS response
-      setTimeout(() => { 
-        subscription.remove(); 
-        setRefreshing(false); 
-      }, 15000);
-    } catch (err) {
+      setRefreshing(true);
+      try {
+        const { readRecentSms } = await import('../engine/SmsService');
+        const messages = await readRecentSms(5);
+        
+        let foundBalance = null;
+        for (const msg of messages) {
+          const cleanSender = msg.sender.toUpperCase();
+          if (cleanSender.includes('SBIPSG') || cleanSender.includes('SBI')) {
+            const bal = parseSmsForBalance(msg.body);
+            if (bal !== null) {
+              foundBalance = bal;
+              break; // Stop at the most recent one
+            }
+          }
+        }
+
+        if (foundBalance !== null) {
+           setUser({ balance: foundBalance });
+           setIsRevealed(true);
+        } else {
+           // If not found in last 5, attempt to send request again? 
+           // User asked to "simply fetch recent 5", so I'll stick to that.
+           Alert.alert('No Message Found', 'Could not find a recent balance message from SBI in your inbox. Please trigger Check Balance again after receiving the SMS.');
+        }
+
+      } catch (err) {
+        console.warn('[BalanceFetch] Error reading SMS:', err);
+      } finally {
+        setRefreshing(false);
+      }
+    } else {
+      setIsRevealed(true);
       setRefreshing(false);
     }
-  }, [gateway, setUser]);
+  }, [user.bank, setUser]);
+
+  const handleCheckBalance = () => {
+    if (pinHash) {
+      setShowPinVerify(true);
+    } else {
+      // No PIN set? (should not happen after setup)
+      fetchBalanceManually();
+    }
+  };
+
+  const onPinVerified = (pin: string) => {
+    if (hashPin(pin) === pinHash) {
+      setShowPinVerify(false);
+      fetchBalanceManually();
+    } else {
+      triggerPinError('Invalid PIN');
+    }
+  };
 
   const onRefresh = useCallback(() => {
-    fetchBalanceManually();
-  }, [fetchBalanceManually]);
+    // Reveal what we have or re-fetch depending on state
+    if (!isRevealed) {
+      handleCheckBalance();
+    } else {
+      fetchBalanceManually();
+    }
+  }, [isRevealed, fetchBalanceManually]);
 
   const recentTxns = useMemo(() => (transactions || []).slice(0, 5), [transactions]);
   const isGsm = networkMode === 'GSM';
 
   return (
     <View style={[s.screen, { backgroundColor: colors.background }]}>
+      {/* Background Decorative Glow */}
+      <View style={s.bgGlowWrap}>
+        <LinearGradient colors={theme === 'dark' ? ['rgba(10, 132, 255, 0.12)', 'transparent'] : ['rgba(10, 132, 255, 0.05)', 'transparent']} style={s.bgGlow} />
+      </View>
+
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />
@@ -73,7 +136,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       >
         <View style={s.content}>
-          {/* Header */}
+          {/* Header / Welcome */}
           <View style={s.welcomeRow}>
             <View>
               <Text style={[s.welcomeSub, { color: colors.textTertiary }]}>{language === 'en' ? 'Welcome back,' : 'वापसी पर स्वागत है,'}</Text>
@@ -84,42 +147,61 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
             </TouchableOpacity>
           </View>
 
-          {/* Balance Card */}
-          <LinearGradient 
-            colors={theme === 'dark' ? ['#1A1A1A', '#0D0D0D'] : ['#FFFFFF', '#F9F9F9']} 
-            style={[s.balanceCard, { borderColor: colors.cardBorder }]}
+          {/* New Premium Balance Card */}
+          <LinearGradient
+            colors={theme === 'dark' ? ['#1A1B2E', '#121220', '#0E0E18'] : ['#FFFFFF', '#F9F9F9']}
+            style={[s.balanceCard, { borderColor: theme === 'dark' ? 'rgba(10, 132, 255, 0.15)' : colors.cardBorder }]}
           >
             <View style={s.balanceHeader}>
-              <Text style={[s.balanceLabel, { color: colors.textTertiary }]}>{t.balance.toUpperCase()}</Text>
-              <View style={[s.badge, { backgroundColor: isGsm ? colors.error + '10' : colors.success + '10' }]}>
-                <Icon name={isGsm ? 'shield-airplane' : 'wifi-check'} size={12} color={isGsm ? colors.error : colors.success} />
+              <View>
+                <Text style={[s.balanceLabel, { color: colors.textTertiary }]}>{t.balance.toUpperCase()}</Text>
+                <View style={[s.balanceAccent, { backgroundColor: colors.primary }]} />
+              </View>
+              <View style={[s.badge, { backgroundColor: isGsm ? colors.error + '15' : colors.success + '15' }]}>
+                <View style={[s.dot, { backgroundColor: isGsm ? colors.error : colors.success }]} />
                 <Text style={[s.badgeText, { color: isGsm ? colors.error : colors.success }]}>
                   {isGsm ? t.offline : t.online}
                 </Text>
               </View>
             </View>
-            
+
             <View style={s.balanceValueRow}>
-              <Text style={[s.balanceAmount, { color: colors.textPrimary }]}>{formatCurrency(user.balance)}</Text>
-              <TouchableOpacity onPress={fetchBalanceManually} style={s.refreshBtn}>
-                <Icon name="refresh" size={20} color={colors.primary} />
-              </TouchableOpacity>
+              <View style={s.amountWrap}>
+                <Text style={[s.currencySymbol, { color: colors.textTertiary }]}>₹</Text>
+                <Text style={[s.balanceAmount, { color: colors.textPrimary }]}>
+                  {isRevealed ? formatCurrency(user.balance).replace('₹', '') : '******'}
+                </Text>
+              </View>
+              {!isRevealed ? (
+                <TouchableOpacity onPress={handleCheckBalance} style={[s.checkBalanceBtn, { backgroundColor: colors.primary }]}>
+                   <Text style={s.checkBalanceBtnText}>Check Balance</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={fetchBalanceManually} style={[s.refreshBtn, { backgroundColor: colors.primary + '15' }]}>
+                  <Icon name="refresh" size={20} color={colors.primary} />
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={s.cardFooter}>
               <View style={s.cardInfo}>
-                <Icon name="checkbox-marked-circle" size={14} color={colors.success} />
-                <Text style={[s.cardInfoText, { color: colors.textSecondary }]}>Linked Bank: {user.bank || 'N/A'} (Verified)</Text>
+                <Icon name="bank-outline" size={14} color={colors.textTertiary} />
+                <Text style={[s.cardInfoText, { color: colors.textSecondary }]}>{user.bank || 'Linked Bank'}</Text>
               </View>
-              <Text style={[s.lastUpdate, { color: colors.textTertiary }]}>Last fetched via SMS</Text>
+              <Text style={[s.lastUpdate, { color: colors.textTertiary }]}>Sync via SMS</Text>
             </View>
           </LinearGradient>
 
-          {/* Actions */}
+          {/* Quick Actions Header */}
+          <View style={s.sectionHeader}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, fontSize: 16 }]}>Quick Actions</Text>
+          </View>
+
+          {/* Actions Grid */}
           <View style={s.actionsGrid}>
             <ActionBtn icon="qrcode-scan" label={t.scan} color="#0A84FF" onPress={() => navigation.navigate('QRScan')} themeColors={colors} />
+            <ActionBtn icon="cellphone-nfc" label="UPI Pay" color="#5856D6" onPress={() => navigation.navigate('UpiPayment')} themeColors={colors} />
             <ActionBtn icon="bank-transfer" label={t.send} color="#BF5AF2" onPress={() => navigation.navigate('SendMoney', { method: 'USSD' })} themeColors={colors} />
-            <ActionBtn icon="wallet" label="Wallet" color={colors.primary} onPress={() => navigation.navigate('SendMoney', { method: 'WALLET' })} themeColors={colors} />
             <ActionBtn icon="bank-outline" label="Services" color="#FF375F" onPress={() => navigation.navigate('Services')} themeColors={colors} />
             <ActionBtn icon="history" label={t.history} color="#FF9F0A" onPress={() => navigation.navigate('History')} themeColors={colors} />
           </View>
@@ -135,7 +217,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
             {recentTxns.length > 0 ? (
               <TransactionList transactions={recentTxns} scrollEnabled={false} />
             ) : (
-              <View style={[s.emptyState, { backgroundColor: colors.surfaceHighlight }]}>
+              <View style={[s.emptyState, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
                 <Icon name="layers-off-outline" size={32} color={colors.textTertiary} />
                 <Text style={{ color: colors.textTertiary, marginTop: 8 }}>{language === 'en' ? 'No transactions yet.' : 'कोई लेनदेन नहीं।'}</Text>
               </View>
@@ -143,14 +225,24 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           </View>
         </View>
       </ScrollView>
+
+      {/* PIN Verification Modal */}
+      <PinScreen
+        visible={showPinVerify}
+        mode="verify"
+        title="Check Balance"
+        subtitle="Verification required"
+        onComplete={onPinVerified}
+        onCancel={() => setShowPinVerify(false)}
+      />
     </View>
   );
 };
 
 const ActionBtn = ({ icon, label, color, onPress, themeColors }: any) => (
-  <TouchableOpacity style={s.actionBtnWrap} onPress={onPress}>
-    <View style={[s.actionIcon, { backgroundColor: `${color}15` }]}>
-      <Icon name={icon} size={28} color={color} />
+  <TouchableOpacity style={s.actionBtnWrap} activeOpacity={0.8} onPress={onPress}>
+    <View style={[s.actionIcon, { backgroundColor: `${color}18`, borderWidth: 1, borderColor: `${color}20` }]}>
+      <Icon name={icon} size={26} color={color} />
     </View>
     <Text style={[s.actionLabel, { color: themeColors.textSecondary }]}>{label}</Text>
   </TouchableOpacity>
@@ -158,29 +250,37 @@ const ActionBtn = ({ icon, label, color, onPress, themeColors }: any) => (
 
 const s = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: spacing.xl, gap: spacing.lg },
-  welcomeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md, marginTop: 10 },
-  welcomeSub: { fontSize: 12, fontWeight: '600' },
-  welcomeTitle: { fontSize: 28, fontWeight: '900' },
+  bgGlowWrap: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  bgGlow: { position: 'absolute', top: -100, left: -100, width: 400, height: 400, borderRadius: 200 },
+  content: { padding: spacing.xl, gap: spacing.xl },
+  welcomeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs },
+  welcomeSub: { fontSize: 13, fontWeight: '600', letterSpacing: 0.5 },
+  welcomeTitle: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5 },
   profileBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-  balanceCard: { borderRadius: 28, padding: 24, borderWidth: 1, elevation: 8 },
-  balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  balanceLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  balanceValueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  balanceAmount: { fontSize: 40, fontWeight: '900' },
-  refreshBtn: { padding: 8, borderRadius: 12, backgroundColor: 'rgba(10, 132, 255, 0.1)' },
-  cardFooter: { marginTop: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.1)', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cardInfoText: { fontSize: 11, fontWeight: '600' },
-  lastUpdate: { fontSize: 9, fontStyle: 'italic' },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { fontSize: 10, fontWeight: '800' },
-  actionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, flexWrap: 'wrap', gap: 12 },
+  balanceCard: { borderRadius: 32, padding: 24, borderWidth: 1, elevation: 12 },
+  balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  balanceLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  balanceAccent: { width: 16, height: 2, borderRadius: 1, marginTop: 4 },
+  balanceValueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  amountWrap: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
+  currencySymbol: { fontSize: 24, fontWeight: '700', marginTop: 8 },
+  balanceAmount: { fontSize: 48, fontWeight: '900', letterSpacing: -1 },
+  refreshBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  cardFooter: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cardInfoText: { fontSize: 12, fontWeight: '700' },
+  lastUpdate: { fontSize: 10, fontWeight: '600', opacity: 0.8 },
+  dot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
+  badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
+  badgeText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
+  actionsGrid: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 },
   actionBtnWrap: { alignItems: 'center', gap: 10, width: '18%' },
-  actionIcon: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  actionLabel: { fontSize: 11, fontWeight: '800' },
-  txnSection: { marginTop: 24, gap: 16 },
+  actionIcon: { width: 64, height: 64, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  actionLabel: { fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  txnSection: { marginTop: spacing.md, gap: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { fontSize: 18, fontWeight: '900' },
-  emptyState: { alignItems: 'center', padding: 32, borderRadius: 20, borderStyle: 'dashed', borderWidth: 1, borderColor: 'rgba(128,128,128,0.2)' },
+  sectionTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.2 },
+  emptyState: { alignItems: 'center', padding: 32, borderRadius: 24, borderStyle: 'dashed', borderWidth: 1 },
+  checkBalanceBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  checkBalanceBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
 });

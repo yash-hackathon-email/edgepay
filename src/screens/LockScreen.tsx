@@ -7,9 +7,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { authenticate, isBiometricAvailable } from '../engine/BiometricService';
 import { useStore } from '../store/useStore';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { useTheme, spacing, borderRadius, typography } from '../theme';
 
 export const LockScreen: React.FC = () => {
+  const { colors, theme } = useTheme();
   const setAuthenticated = useStore(state => state.setAuthenticated);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -67,37 +68,39 @@ export const LockScreen: React.FC = () => {
   });
 
   return (
-    <LinearGradient
-      colors={['#0A0A0A', '#0D1B2A', '#1B2838']}
-      style={s.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <View style={[s.container, { backgroundColor: colors.background }]}>
+      <View style={s.bgGlowWrap}>
+        <LinearGradient
+          colors={[colors.primary + '15', 'transparent']}
+          style={s.bgGlow}
+        />
+      </View>
+
       <Animated.View style={[s.content, { opacity: fadeAnim }]}>
         {/* Logo */}
         <View style={s.logoWrap}>
-          <Image source={require('../../assets/logo1.jpg')} style={s.logoImg} resizeMode="contain" />
-          <Text style={s.tagline}>Secure GSM Payments</Text>
+          <Image source={require('../../assets/EdgePay_Icon.png')} style={s.logoImg} resizeMode="contain" />
+          <Text style={[s.appName, { color: colors.textPrimary }]}>EdgePay</Text>
+          <Text style={[s.tagline, { color: colors.textSecondary }]}>SECURE GSM PAYMENTS</Text>
         </View>
 
         {/* Fingerprint Area */}
         <View style={s.authArea}>
-          {/* Animated ring */}
           <Animated.View
             style={[
               s.ring,
-              { transform: [{ scale: ringScale }], opacity: ringOpacity },
+              { transform: [{ scale: ringScale }], opacity: ringOpacity, borderColor: colors.primary },
             ]}
           />
 
           <Animated.View style={[s.fingerprintWrap, { transform: [{ scale: pulseAnim }] }]}>
             <LinearGradient
-              colors={['rgba(10,132,255,0.15)', 'rgba(10,132,255,0.05)']}
-              style={s.fingerprintBg}
+              colors={[colors.primary + '30', colors.primary + '10']}
+              style={[s.fingerprintBg, { borderColor: colors.primary + '40' }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Icon name="fingerprint" size={56} color="#0A84FF" />
+              <Icon name="fingerprint" size={56} color={colors.primary} />
             </LinearGradient>
           </Animated.View>
         </View>
@@ -110,37 +113,38 @@ export const LockScreen: React.FC = () => {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Text style={s.unlockText}>Tap to Unlock</Text>
+            <Text style={s.unlockText}>Unlock with Biometrics</Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        <Text style={s.hint}>Use fingerprint or device PIN</Text>
+        <Text style={[s.hint, { color: colors.textTertiary }]}>Securely encrypted for your safety</Text>
       </Animated.View>
-    </LinearGradient>
+    </View>
   );
 };
 
 const s = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  bgGlowWrap: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  bgGlow: { position: 'absolute', top: -150, left: -150, width: 500, height: 500, borderRadius: 250 },
   content: { alignItems: 'center', width: '100%', paddingHorizontal: spacing['3xl'] },
-  logoWrap: { alignItems: 'center', marginBottom: spacing['6xl'] },
-  logoImg: { width: 100, height: 100, borderRadius: 24, marginBottom: spacing.md },
-  appName: { ...typography.displayLarge, color: colors.textPrimary, letterSpacing: 1 },
-  tagline: { ...typography.bodySmall, color: colors.textTertiary, marginTop: spacing.xs },
-  authArea: { alignItems: 'center', justifyContent: 'center', marginBottom: spacing['5xl'], height: 160 },
+  logoWrap: { alignItems: 'center', marginBottom: 60 },
+  logoImg: { width: 90, height: 90, borderRadius: 24, marginBottom: 16 },
+  appName: { fontSize: 32, fontWeight: '900', letterSpacing: 1 },
+  tagline: { fontSize: 11, fontWeight: '800', letterSpacing: 4, marginTop: 4, opacity: 0.6 },
+  authArea: { alignItems: 'center', justifyContent: 'center', marginBottom: 60, height: 160 },
   ring: {
-    position: 'absolute', width: 120, height: 120, borderRadius: 60,
-    borderWidth: 2, borderColor: colors.primary,
+    position: 'absolute', width: 140, height: 140, borderRadius: 70,
+    borderWidth: 2,
   },
   fingerprintWrap: { zIndex: 1 },
   fingerprintBg: {
     width: 100, height: 100, borderRadius: 50,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: 'rgba(10,132,255,0.3)',
+    borderWidth: 1.5,
   },
-  fingerprintIcon: { fontSize: 40 },
-  unlockBtn: { width: '100%', borderRadius: borderRadius.xl, overflow: 'hidden', marginBottom: spacing.lg },
-  unlockGrad: { paddingVertical: spacing.xl, alignItems: 'center' },
-  unlockText: { ...typography.h3, color: '#FFF', fontWeight: '700' },
-  hint: { ...typography.caption, color: colors.textTertiary },
+  unlockBtn: { width: '100%', borderRadius: 20, overflow: 'hidden', marginBottom: 20 },
+  unlockGrad: { paddingVertical: 20, alignItems: 'center' },
+  unlockText: { fontSize: 17, color: '#FFF', fontWeight: '800' },
+  hint: { fontSize: 12, fontWeight: '600', opacity: 0.6 },
 });

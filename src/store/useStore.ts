@@ -9,6 +9,7 @@ interface UIState {
   theme: 'light' | 'dark';
   language: 'en' | 'hi';
   toggleTheme: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
   setLanguage: (lang: 'en' | 'hi') => void;
 }
 
@@ -36,11 +37,15 @@ export const useStore = create<AppStore & UIState>((set, get) => ({
   },
 
   // ─── UI / Theme / Lang ───────────────────────────────────────────
-  theme: 'dark', // Default to sleek dark mode
-  language: 'en',
+  theme: 'dark' as 'light' | 'dark', 
+  language: 'en' as 'en' | 'hi',
 
   toggleTheme: () => {
     set(state => ({ theme: state.theme === 'dark' ? 'light' : 'dark' }));
+  },
+
+  setTheme: (theme: 'light' | 'dark') => {
+    set({ theme });
   },
 
   setLanguage: (lang: 'en' | 'hi') => {
